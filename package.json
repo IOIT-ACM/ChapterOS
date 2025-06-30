@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "ChapterOS frontend assets",
   "scripts": {
-    "build": "tailwindcss -i ./static/src/input.css -o ./static/css/index.css",
-    "watch": "tailwindcss -i ./static/src/input.css -o ./static/css/index.css --watch"
+    "build": "tailwindcss -i ./static/src/input.css -o ./static/css/index.css --minify",
+    "watch": "tailwindcss -i ./static/src/input.css -o ./static/css/index.css --watch --minify"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

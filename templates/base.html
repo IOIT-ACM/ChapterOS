@@ -4,22 +4,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}ChapterOS{% endblock %}</title>
+    <title>{% block title %}IOIT ACM ChapterOS{% endblock %}</title>
     <link href="{% static 'css/index.css' %}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   </head>
   <body class="h-full bg-gradient-to-br from-slate-50 to-blue-50 text-gray-800 font-sans flex flex-col min-h-screen">
-    <!-- Navigation Header -->
     <header class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-50">
       <nav class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
-          <!-- Logo -->
           <a href="/" class="flex items-center space-x-3 group">
             <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
             <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ChapterOS</span>
           </a>
           
-          <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center space-x-1">
             <a href="/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
               <i class="fas fa-home"></i>
@@ -35,13 +32,11 @@
             </a>
           </div>
 
-          <!-- Mobile Menu Button -->
           <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
             <i class="fas fa-bars text-gray-600"></i>
           </button>
         </div>
 
-        <!-- Mobile Navigation -->
         <div id="mobile-menu" class="md:hidden mt-4 pb-4 hidden">
           <div class="flex flex-col space-y-2">
             <a href="/" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
@@ -61,12 +56,10 @@
       </nav>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-1 container mx-auto px-6 py-8">
         {% block content %} {% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white/80 backdrop-blur-sm border-t border-gray-100 mt-auto">
       <div class="container mx-auto px-6 py-6">
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
@@ -78,13 +71,13 @@
             <p>© 2024 IOIT ACM Student Chapter. All rights reserved.</p>
           </div>
           <div class="flex items-center space-x-4">
-            <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
+            <a href="https://x.com/IOIT_ACM" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
               <i class="fab fa-twitter"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
+            <a href="https://github.com/ioit-acm/" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
               <i class="fab fa-github"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
+            <a href="https://www.linkedin.com/company/ioit-acm/" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
               <i class="fab fa-linkedin"></i>
             </a>
           </div>
@@ -92,7 +85,6 @@
       </div>
     </footer>
 
-    <!-- JavaScript for Mobile Menu -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -150,7 +142,7 @@
 
     <style>
       ::-webkit-scrollbar {
-        width: 8px;
+        width: 5px;
       }
       
       ::-webkit-scrollbar-track {
@@ -159,7 +151,7 @@
       
       ::-webkit-scrollbar-thumb {
         background: linear-gradient(to bottom, #3b82f6, #22c55e);
-        border-radius: 3px;
+        border-radius: 0px;
       }
       
       ::-webkit-scrollbar-thumb:hover {

@@ -4,7 +4,12 @@ setup:
 	. venv/bin/activate && pip install -r requirements.txt
 	@echo "Installing npm dependencies..."
 	npm install
-	@echo "Setup complete. Activate venv with: . venv/bin/activate"
+	@echo "Copying .env.example to .env..."
+	cp .env.example .env
+	@echo "Setup complete."
+	. venv/bin/activate
+	@echo "Building frontend assets..."
+	npm run build
 
 run:
 	@echo "Starting development server at http://127.0.0.1:8000/"
