@@ -2,6 +2,8 @@ setup:
 	python3 -m venv venv
 	@echo "Installing python dependencies..."
 	. venv/bin/activate && pip install -r requirements.txt
+	@echo "Installing npm dependencies..."
+	npm install
 	@echo "Setup complete. Activate venv with: . venv/bin/activate"
 
 run:

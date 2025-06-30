@@ -1,8 +1,85 @@
 {% extends "base.html" %}
-
-{% block title %}Welcome to ChapterOS{% endblock %}
-
+{% block title %}IOIT ACM Internal Dashboard{% endblock %}
 {% block content %}
-    <h1>Welcome to the ChapterOS Application</h1>
-    <p>This is the main landing page.</p>
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+        <div class="inline-flex items-center px-4 py-2 bg-indigo-50 rounded-full text-indigo-700 text-sm font-medium mb-6">
+            <i class="fas fa-cogs mr-2"></i>
+            Your centralized chapter management hub
+        </div>
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-indigo-600 via-teal-600 to-indigo-800 bg-clip-text text-transparent leading-tight">
+            IOIT ACM Dashboard
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            An internal tool for the committee: view recruitment results, manage events, track documentation, and plan your calendar—all in one place.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a href="/recruitments/" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-teal-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl">
+                <i class="fas fa-users mr-3"></i>
+                Recruitment Results
+            </a>
+            <a href="/form_builder/" class="inline-flex items-center px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl border border-gray-200">
+                <i class="fas fa-wpforms mr-3"></i>
+                Form Builder
+            </a>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+        <!-- Feature: Recruitment Dashboard -->
+        <div class="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-indigo-200 group">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                <i class="fas fa-chart-pie text-white text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Recruitment Dashboard</h3>
+            <p class="text-gray-600 leading-relaxed">
+                View and analyze the results from recruitment forms in real-time, filter by member type, and export to spreadsheets.
+            </p>
+        </div>
+
+        <!-- Feature: Documentation Hub -->
+        <div class="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                <i class="fas fa-book text-white text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Documentation Hub</h3>
+            <p class="text-gray-600 leading-relaxed">
+                Maintain social media assets, bank sheets, and all chapter documentation in one organized repository.
+            </p>
+        </div>
+
+        <!-- Feature: Event & Speaker Tracker -->
+        <div class="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group">
+            <div class="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200">
+                <i class="fas fa-microphone text-white text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">Event & Speaker Tracker</h3>
+            <p class="text-gray-600 leading-relaxed">
+                Plan and track upcoming workshops, speakers, and events with calendar integration and status updates.
+            </p>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="bg-gradient-to-r from-indigo-600 to-teal-600 rounded-3xl p-8 md:p-12 text-white mb-16">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Chapter at a Glance</h2>
+            <p class="text-indigo-100 text-lg">Current membership and projections</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div class="stat-item">
+                <div class="text-3xl md:text-4xl font-bold mb-2">500</div>
+                <div class="text-indigo-100">Active Members</div>
+            </div>
+            <div class="stat-item">
+                <div class="text-3xl md:text-4xl font-bold mb-2">12</div>
+                <div class="text-indigo-100">Professional Members</div>
+            </div>
+            <div class="stat-item">
+                <div class="text-3xl md:text-4xl font-bold mb-2">800</div>
+                <div class="text-indigo-100">Estimated Members This Year</div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
