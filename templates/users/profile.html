@@ -1,35 +1,97 @@
-{% extends "base.html" %}
+{% extends "global/form.html" %} 
 
-{% block title %}My Profile - ChapterOS{% endblock %}
+{% block title %}My Profile - ChapterOS{%endblock %} 
 
-{% block content %}
-<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-    <h1 class="text-2xl font-bold mb-2 text-gray-800">My Profile</h1>
-    <p class="text-gray-500 mb-6">View and edit your personal information.</p>
+{% block formcontent %}
 
-    <form method="post" novalidate>
-        {% csrf_token %}
-        
-        <div class="space-y-4">
-            {% for field in form %}
-            <div>
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                    <p class="mt-2 text-sm text-gray-500">{{ field.help_text|safe }}</p>
-                {% endif %}
-                {% for error in field.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        </div>
+<h1 class="text-2xl font-bold mb-2 text-gray-800">My Profile</h1>
+<p class="text-gray-500 mb-8">View and edit your personal information.</p>
 
-        <div class="mt-8">
-            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                Save Changes
-            </button>
-        </div>
-    </form>
-</div>
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="grid md:grid-cols-2 md:gap-6">
+    <div class="relative z-0 w-full mb-5 group">
+      {% for error in form.full_name.errors %}
+      <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+      {% endfor %} {{ form.full_name }}
+      <label
+        for="{{ form.full_name.id_for_label }}"
+        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+      >
+        {{ form.full_name.label }}
+      </label>
+    </div>
+    <div class="relative z-0 w-full mb-5 group">
+      {% for error in form.email.errors %}
+      <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+      {% endfor %} {{ form.email }}
+      <label
+        for="{{ form.email.id_for_label }}"
+        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+      >
+        {{ form.email.label }}
+      </label>
+    </div>
+  </div>
+
+  <div class="relative z-0 w-full mb-5 group">
+    {% for error in form.mobile_number.errors %}
+    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+    {% endfor %} {{ form.mobile_number }}
+    <label
+      for="{{ form.mobile_number.id_for_label }}"
+      class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+    >
+      Mobile number (e.g., +919876543210)
+    </label>
+  </div>
+
+  <div class="grid md:grid-cols-2 md:gap-6">
+    <div class="w-full mb-5">
+      <label
+        for="{{ form.academic_year.id_for_label }}"
+        class="block mb-2 text-sm font-medium text-gray-700"
+      >
+        {{ form.academic_year.label }}
+      </label>
+      {% for error in form.academic_year.errors %}
+      <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+      {% endfor %} {{ form.academic_year }}
+    </div>
+    <div class="w-full mb-5">
+      <label
+        for="{{ form.branch.id_for_label }}"
+        class="block mb-2 text-sm font-medium text-gray-700"
+      >
+        {{ form.branch.label }}
+      </label>
+      {% for error in form.branch.errors %}
+      <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+      {% endfor %} {{ form.branch }}
+    </div>
+  </div>
+
+  <div class="w-full mb-5">
+    <label
+      for="{{ form.team.id_for_label }}"
+      class="block mb-2 text-sm font-medium text-gray-700"
+    >
+      {{ form.team.label }}
+    </label>
+    {% for error in form.team.errors %}
+    <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+    {% endfor %} {{ form.team }}
+  </div>
+
+  <div class="mt-8">
+    <button
+      type="submit"
+      class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    >
+      Save Changes
+    </button>
+  </div>
+</form>
+
 {% endblock %}

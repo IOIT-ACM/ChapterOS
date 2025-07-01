@@ -21,9 +21,15 @@ class UserProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['full_name'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500'})
-        self.fields['email'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500'})
-        self.fields['mobile_number'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': '+911234567890'})
-        self.fields['academic_year'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500'})
-        self.fields['branch'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500', 'placeholder': 'e.g., Computer Engineering'})
-        self.fields['team'].widget.attrs.update({'class': 'shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500'})
+        
+        text_input_classes = "block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+        
+        select_input_classes = "block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+
+        self.fields['full_name'].widget.attrs.update({'class': text_input_classes, 'placeholder': ' '})
+        self.fields['email'].widget.attrs.update({'class': text_input_classes, 'placeholder': ' '})
+        self.fields['mobile_number'].widget.attrs.update({'class': text_input_classes, 'placeholder': ' '})
+        
+        self.fields['academic_year'].widget.attrs.update({'class': select_input_classes})
+        self.fields['branch'].widget.attrs.update({'class': select_input_classes})
+        self.fields['team'].widget.attrs.update({'class': select_input_classes})

@@ -3,8 +3,192 @@
 {% block title %}Form Builder - ChapterOS{% endblock %}
 
 {% block content %}
-    <div class="bg-white p-8 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-4">Form Builder App</h1>
-        <p class="text-gray-600">This is the main page for the form builder application.</p>
+
+<div class="flex items-center justify-center h-screen w-full overflow-hidden">
+    <div id="canvas-container" class="relative w-full h-full max-w-full max-h-full flex items-center justify-center overflow-hidden">
+        <canvas id="canvas" class="block"></canvas>
+        <div
+            class="absolute inset-0 flex items-center justify-center select-none"
+            style="pointer-events: none"
+        >
+            <div class="text-center p-3">
+                <h1 class="text-3xl md:text-5xl font-extrabold text-gray-800">
+                    Coming Soon
+                </h1>
+            </div>
+        </div>
     </div>
+</div>
+
+
+<script type="importmap">
+    {
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"
+    }
+    }
+</script>
+
+
+<script type="module">
+  import * as THREE from "three";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+  import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const canvas = document.getElementById("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let cubes = [];
+    const cursor = new THREE.Vector3();
+    const oPos = new THREE.Vector3();
+    const vec = new THREE.Vector3();
+    const dir = new THREE.Vector3();
+    const gap = 0.1;
+    let stride = 5;
+    const displacement = 3;
+    const intensity = 1;
+
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const sizes = {
+      width: canvas.width,
+      height: canvas.height,
+    };
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      sizes.width / sizes.height,
+      0.1,
+      1000,
+    );
+    camera.position.set(8, 8, 8);
+    scene.add(camera);
+
+    const ambientLight = new THREE.AmbientLight(0xaaaaaa, 1.5);
+    scene.add(ambientLight);
+
+    const spotLight = new THREE.SpotLight(0xffffff, 1.5);
+    spotLight.position.set(-15, 20, 15);
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+    scene.add(spotLight);
+
+    const pointLight = new THREE.PointLight(0xff8888, 1, 50);
+    pointLight.position.set(10, 5, -10);
+    scene.add(pointLight);
+
+    const directionalLight = new THREE.DirectionalLight(0x88ff88, 0.8);
+    directionalLight.position.set(-5, 15, 10);
+    scene.add(directionalLight);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+
+    const createCubes = () => {
+      cubes.forEach((cube) => scene.remove(cube));
+      cubes = [];
+
+      const geometry = new RoundedBoxGeometry(1, 1, 1, 2, 0.15);
+      const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      const center = stride / 2;
+
+      for (let x = 0; x < stride; x++) {
+        for (let y = 0; y < stride; y++) {
+          for (let z = 0; z < stride; z++) {
+            const cube = new THREE.Mesh(geometry, material.clone());
+            const position = new THREE.Vector3(
+              x + x * gap - center,
+              y + y * gap - center,
+              z + z * gap - center,
+            );
+            cube.position.copy(position);
+            cube.userData.originalPosition = position.clone();
+            cube.userData.material = cube.material;
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            scene.add(cube);
+            cubes.push(cube);
+          }
+        }
+      }
+    };
+
+    createCubes();
+
+    const handleMouseMove = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouse = new THREE.Vector2();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      cursor.set(mouse.x, mouse.y, 0.5).unproject(camera);
+      dir.copy(cursor).sub(camera.position).normalize();
+      cursor.add(dir.multiplyScalar(camera.position.length()));
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const handleResize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      sizes.width = container.clientWidth;
+      sizes.height = container.clientHeight;
+
+      renderer.setSize(sizes.width, sizes.height);
+      renderer.setPixelRatio(Math.min(dpr, 2));
+
+      camera.aspect = sizes.width / sizes.height;
+      camera.updateProjectionMatrix();
+
+      canvas.width = sizes.width;
+      canvas.height = sizes.height;
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("zoom", handleResize);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.minDistance = 8;
+    controls.maxDistance = 30;
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      controls.update();
+
+      cubes.forEach((cube) => {
+        oPos.copy(cube.userData.originalPosition);
+        dir.copy(oPos).sub(cursor).normalize();
+        const dist = oPos.distanceTo(cursor);
+        const distInv = displacement - dist;
+        const col = Math.max(0.5, distInv) / 1.5;
+
+        if (dist > displacement * 1.1) {
+          cube.userData.material.color.setRGB(1, 1, 1);
+        } else {
+          cube.userData.material.color.setRGB(col / 2, col * 2, col * 4);
+        }
+
+        if (dist > displacement) {
+          cube.position.lerp(oPos, 0.2);
+        } else {
+          vec.copy(oPos).add(dir.multiplyScalar(distInv * intensity));
+          cube.position.lerp(vec, 0.2);
+        }
+      });
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+  });
+</script>
+
+
 {% endblock %}

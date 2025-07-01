@@ -1,37 +1,71 @@
-{% extends "base.html" %}
+{% extends "global/form.html" %}
 
-{% block title %}Sign In - ChapterOS{% endblock %}
+{% block title %}
+    Sign In - ChapterOS
+{% endblock %}
 
-{% block content %}
-<div class="max-w-md mx-auto mt-10">
-    <div class="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Sign In</h2>
-        <form method="post">
-            {% csrf_token %}
-            {% if form.non_field_errors %}
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    {% for error in form.non_field_errors %}
-                        <span class="block sm:inline">{{ error }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="mb-4">
-                <label for="id_username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                <input type="text" name="username" id="id_username" class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+{% block formcontent %}
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Sign In to ChapterOS</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                {% for error in form.non_field_errors %}
+                    <span class="block sm:inline">{{ error }}</span>
+                {% endfor %}
             </div>
-            <div class="mb-6">
-                <label for="id_password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" name="password" id="id_password" class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            </div>
-            <div class="flex items-center justify-between">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200">
-                    Sign In
-                </button>
-            </div>
-        </form>
+        {% endif %}
+
+        <div class="relative z-0 w-full mb-5 group">
+            <input
+                type="text"
+                name="username"
+                id="id_username"
+                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                placeholder=" "
+                required
+            />
+            <label
+                for="id_username"
+                class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+                Username
+            </label>
+        </div>
+
+        <div class="relative z-0 w-full mb-5 group">
+            <input
+                type="password"
+                name="password"
+                id="id_password"
+                class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                placeholder=" "
+                required
+            />
+            <label
+                for="id_password"
+                class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+                Password
+            </label>
+        </div>
+
+        <button
+            type="submit"
+            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+            Sign In
+        </button>
+
         <p class="text-center text-gray-600 text-sm mt-6">
-            Don't have an account? <a href="{% url 'users:register' %}" class="font-bold text-blue-600 hover:text-blue-800">Register here</a>.
+            Don't have an account?
+            <a
+                href="{% url 'users:register' %}"
+                class="font-bold text-blue-600 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400"
+            >
+                Register here
+            </a>.
         </p>
-    </div>
-</div>
+    </form>
+    {% include "global/permission_warning.html" %}
 {% endblock %}

@@ -3,137 +3,44 @@
 <html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>{% block title %}IOIT ACM ChapterOS{% endblock %}</title>
+
+    <meta name="description" content="{% block description %}An internal dashboard for the IOIT ACM Student Chapter to manage recruitments, events, and documentation.{% endblock %}">
+    <meta name="keywords" content="IOIT ACM, ChapterOS, ACM, Student Chapter, Dashboard, Recruitments, IOIT Pune">
+    <meta name="author" content="IOIT ACM Student Chapter">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" href="{% static 'favicon.ico' %}" sizes="any">
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{% static 'apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+    <link rel="canonical" href="https://os.ioit.acm.org{{ request.path }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://os.ioit.acm.org{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}ChapterOS | IOIT ACM{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}An internal dashboard for the IOIT ACM Student Chapter to manage recruitments, events, and documentation.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://os.ioit.acm.org{% static 'og-image.png' %}{% endblock %}">
+    <meta property="og:site_name" content="IOIT ACM ChapterOS">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://os.ioit.acm.org{{ request.path }}">
+    <meta name="twitter:title" content="{% block twitter_title %}ChapterOS | IOIT ACM{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}An internal dashboard for the IOIT ACM Student Chapter to manage recruitments, events, and documentation.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://os.ioit.acm.org{% static 'og-image.png' %}{% endblock %}">
+
     <link href="{% static 'css/index.css' %}" rel="stylesheet">
+    <link href="{% static 'css/global.css' %}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   </head>
   <body class="h-full bg-gradient-to-br from-slate-50 to-blue-50 text-gray-800 font-sans flex flex-col min-h-screen">
-    <header class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100 z-50">
-      <nav class="container mx-auto px-3 py-2">
-        <div class="flex justify-between items-center">
-          <a href="/" class="flex items-center space-x-3 group">
-            <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
-            <span class="md:text-2xl text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ChapterOS</span>
-          </a>
-          
-          <div class="flex items-center text-sm">
-            <div class="hidden md:flex items-center space-x-1">
-              <a href="/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-              </a>
-              {% if user.is_authenticated %}
-              <a href="/recruitments/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-                <i class="fas fa-users"></i>
-                <span>Recruitments</span>
-              </a>
-              <a href="/form_builder/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-                <i class="fas fa-hammer"></i>
-                <span>Form Builder</span>
-              </a>
-              {% endif %}
-            </div>
-
-            <div class="hidden md:flex items-center space-x-4 ml-6">
-              {% if user.is_authenticated %}
-                <div class="relative group">
-                    <button class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                        <span>Profile</span>
-                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 group-hover:rotate-180"></i>
-                    </button>
-                    <div class="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden group-hover:block ring-1 ring-black ring-opacity-5">
-                        <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <i class="fas fa-user-circle w-5"></i>
-                            <span>View Profile</span>
-                        </a>
-                        <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <i class="fas fa-user-edit w-5"></i>
-                            <span>Edit Profile</span>
-                        </a>
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <form action="{% url 'users:logout' %}" method="post" class="w-full">
-                            {% csrf_token %}
-                            <button type="submit" class="w-full text-left flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-sign-out-alt w-5"></i>
-                                <span>Logout</span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                {% if 'Admin' in user_roles %}
-                  <a href="{% url 'users:admin_conference' %}" class="px-3 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
-                {% endif %}
-              {% else %}
-                <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Sign In</a>
-                <a href="{% url 'users:register' %}" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">Register</a>
-              {% endif %}
-            </div>
-
-            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ml-4">
-              <i class="fas fa-bars text-gray-600"></i>
-            </button>
-          </div>
-        </div>
-
-        <div id="mobile-menu" class="md:hidden mt-4 pb-4 hidden">
-          <div class="flex flex-col space-y-2">
-            <a href="/" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-              <i class="fas fa-home w-5"></i>
-              <span>Home</span>
-            </a>
-            {% if user.is_authenticated %}
-            <a href="/recruitments/" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-              <i class="fas fa-users w-5"></i>
-              <span>Recruitments</span>
-            </a>
-            <a href="/form_builder/" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-              <i class="fas fa-hammer w-5"></i>
-              <span>Form Builder</span>
-            </a>
-            {% endif %}
-            <div class="border-t border-gray-200 my-2"></div>
-            {% if user.is_authenticated %}
-              <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                <i class="fas fa-tachometer-alt w-5"></i>
-                <span>Dashboard</span>
-              </a>
-              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                <i class="fas fa-user-circle w-5"></i>
-                <span>View Profile</span>
-              </a>
-              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                <i class="fas fa-user-edit w-5"></i>
-                <span>Edit Profile</span>
-              </a>
-              {% if 'Admin' in user_roles %}
-                <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200">
-                  <i class="fas fa-user-shield w-5"></i>
-                  <span>Admin</span>
-                </a>
-              {% endif %}
-              <form action="{% url 'users:logout' %}" method="post" class="w-full">
-                {% csrf_token %}
-                <button type="submit" class="w-full text-left flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                  <i class="fas fa-sign-out-alt w-5"></i>
-                  <span>Logout</span>
-                </button>
-              </form>
-            {% else %}
-              <a href="{% url 'users:login' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                <i class="fas fa-sign-in-alt w-5"></i>
-                <span>Sign In</span>
-              </a>
-              <a href="{% url 'users:register' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
-                <i class="fas fa-user-plus w-5"></i>
-                <span>Register</span>
-              </a>
-            {% endif %}
-          </div>
-        </div>
-      </nav>
-    </header>
+    
+    {% include "global/header.html" %}
 
     <main class="flex-1 container mx-auto md:px-6 px-3 py-8">
         {% if messages %}
@@ -148,103 +55,6 @@
         {% block content %} {% endblock %}
     </main>
 
-    <footer class="bg-white/80 backdrop-blur-sm border-t border-gray-100 mt-auto">
-      <div class="container mx-auto px-3 py-3">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div class="flex items-center space-x-3">
-            <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
-            <span class="text-gray-600 font-medium text-sm">ChapterOS</span>
-          </div>
-          <div class="text-center text-gray-500 text-sm">
-            <p>© 2024 IOIT ACM Student Chapter. All rights reserved.</p>
-          </div>
-          <div class="flex items-center space-x-4">
-            <a href="https://x.com/IOIT_ACM" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="https://github.com/ioit-acm/" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
-              <i class="fab fa-github"></i>
-            </a>
-            <a href="https://www.linkedin.com/company/ioit-acm/" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
-              <i class="fab fa-linkedin"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = mobileMenuBtn.querySelector('i');
-
-        mobileMenuBtn.addEventListener('click', function() {
-          mobileMenu.classList.toggle('hidden');
-          
-          if (mobileMenu.classList.contains('hidden')) {
-            menuIcon.className = 'fas fa-bars text-gray-600';
-          } else {
-            menuIcon.className = 'fas fa-times text-gray-600';
-          }
-        });
-
-        document.addEventListener('click', function(event) {
-          if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
-            mobileMenu.classList.add('hidden');
-            menuIcon.className = 'fas fa-bars text-gray-600';
-          }
-        });
-
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.nav-link, #mobile-menu a');
-        
-        navLinks.forEach(link => {
-          const linkPath = link.getAttribute('href');
-          if (linkPath && (linkPath === currentPath || (currentPath.startsWith(linkPath) && linkPath !== '/'))) {
-            link.classList.add('text-blue-600', 'bg-blue-50');
-            link.classList.remove('text-gray-600');
-          }
-        });
-
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-          anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-              target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-              });
-            }
-          });
-        });
-      });
-    </script>
-
-    <style>
-      ::-webkit-scrollbar {
-        width: 5px;
-      }
-      
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      
-      ::-webkit-scrollbar-thumb {
-        background: linear-gradient(to bottom, #3b82f6, #22c55e);
-        border-radius: 0px;
-      }
-      
-      ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(to bottom, #2563eb, #16a34a);
-      }
-
-      .nav-link:focus,
-      button:focus {
-        outline: 2px solid #3b82f6;
-        outline-offset: 2px;
-      }
-    </style>
+    {% include "global/footer.html" %}
   </body>
 </html>

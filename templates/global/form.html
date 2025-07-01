@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto md:p-6 min-h-screen">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="w-full flex justify-center mt-10 md:mt-10 p-2">
+      <div class="w-1/2 md:mt-20 h-fit sticky top-32">
+        <div
+          class="aspect-square bg-blue-500 w-1/2 h-auto transform absolute border border-white rounded-xl animate-rotate"
+        ></div>
+        <div
+          class="aspect-square overflow-hidden bg-white w-full h-auto transform rotate-45 rounded-3xl border-4 border-white shadow-lg shadow-blue-400"
+        >
+          <img
+            class="-rotate-45 z-50"
+            src="{% static 'og-image.png' %}"
+            alt="about-image"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="p-5 md:p-0 space-y-6">
+      {% block formcontent %} {% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
