@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Calendar{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row gap-6 p-4 sm:p-6 max-w-7xl mx-auto min-h-screen">
+    <!-- Calendar Section -->
+    <div class="lg:w-2/3 w-full bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-4 sm:p-6 transition-all duration-300">
+        <!-- Controls -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 flex-wrap">
+            <div class="flex flex-wrap gap-3 justify-center sm:justify-start">
+                <button id="todayBtn" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                    Today
+                </button>
+                <button id="prevBtn"
+                    class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-white">
+                    ←
+                </button>
+                <button id="nextBtn"
+                    class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-white">
+                    →
+                </button>
+            </div>
+
+            <div id="monthDisplay"
+                class="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center w-full sm:w-auto">
+                Loading...
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
+                <button data-view="dayGridMonth"
+                    class="view-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-white focus:outline-none transition">
+                    Month
+                </button>
+                <button data-view="timeGridWeek"
+                    class="view-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-white focus:outline-none transition">
+                    Week
+                </button>
+                <button data-view="timeGridDay"
+                    class="view-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-white focus:outline-none transition">
+                    Day
+                </button>
+                <button data-view="listWeek"
+                    class="view-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-white focus:outline-none transition">
+                    Agenda
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div id="calendar" class="rounded-lg border border-gray-200 dark:border-zinc-700 overflow-hidden"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:w-1/3 w-full bg-white dark:bg-zinc-800 rounded-2xl shadow-lg p-4 sm:p-6">
+        <div class="relative mb-4">
+            <input id="searchInput" type="text" placeholder="Search events..."
+                class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-gray-100" />
+        </div>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Events on <span id="event-date" class="text-blue-600 dark:text-blue-400">Select a date</span>
+        </h2>
+        <ul id="eventList" class="space-y-4 text-gray-700 dark:text-gray-300"></ul>
+    </div>
+</div>
+
+<!-- FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<script>
+    let calendar;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const calendarEl = document.getElementById("calendar");
+        const eventList = document.getElementById("eventList");
+        const eventDate = document.getElementById("event-date");
+        const searchInput = document.getElementById("searchInput");
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: "dayGridMonth",
+            events: "/calendar/events/",
+            height: "auto",
+            headerToolbar: false,
+            selectable: true,
+            eventDisplay: "block",
+            firstDay: 0,
+            eventDidMount(info) {
+                info.el.style.pointerEvents = "none";
+            },
+            loading(isLoading) {
+                calendarEl.classList.toggle("opacity-50", isLoading);
+                if (isLoading) {
+                    eventList.innerHTML = '<li class="text-center text-gray-500 dark:text-gray-400">Loading events...</li>';
+                }
+            },
+            dateClick(info) {
+                document.querySelectorAll(".fc-daygrid-day").forEach(day => {
+                    day.classList.remove("bg-blue-50", "dark:bg-blue-900");
+                });
+
+                info.dayEl.classList.add("bg-blue-50", "dark:bg-blue-900");
+
+                const allEvents = calendar.getEvents();
+                const clickedEvents = allEvents.filter(e => e.startStr.startsWith(info.dateStr));
+                updateSidebar(info.dateStr, clickedEvents);
+            },
+            datesSet(info) {
+                const monthStr = new Date(info.startStr).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric"
+                });
+                document.getElementById("monthDisplay").textContent = monthStr;
+            }
+        });
+
+        calendar.render();
+        highlightActiveView();
+
+        calendar.on("eventsSet", () => {
+            const today = new Date();
+            const yyyyMMdd = today.toISOString().split("T")[0];
+            const todaysEvents = calendar.getEvents().filter(e => e.startStr.startsWith(yyyyMMdd));
+            updateSidebar(today.toDateString(), todaysEvents);
+        });
+
+        document.getElementById("todayBtn").onclick = () => calendar.today();
+        document.getElementById("prevBtn").onclick = () => calendar.prev();
+        document.getElementById("nextBtn").onclick = () => calendar.next();
+
+        document.querySelectorAll(".view-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                calendar.changeView(btn.dataset.view);
+                highlightActiveView();
+            });
+        });
+
+        function highlightActiveView() {
+            const currentView = calendar.view.type;
+            document.querySelectorAll(".view-btn").forEach(b => {
+                b.classList.remove("bg-blue-500", "text-white");
+                b.classList.add("bg-gray-100", "dark:bg-zinc-700", "text-gray-800", "dark:text-white");
+                if (b.dataset.view === currentView) {
+                    b.classList.remove("bg-gray-100", "dark:bg-zinc-700", "text-gray-800", "dark:text-white");
+                    b.classList.add("bg-blue-500", "text-white");
+                }
+            });
+        }
+
+        searchInput.addEventListener("input", (e) => {
+            const q = e.target.value.toLowerCase();
+            const results = calendar.getEvents().filter(ev => ev.title.toLowerCase().includes(q));
+            updateSidebar("Search Results", results);
+        });
+
+        function updateSidebar(label, events) {
+            eventDate.textContent = label === "Search Results" ? label : new Date(label).toDateString();
+            eventList.innerHTML = events.length
+                ? events.map(ev => `
+                    <li class="border border-gray-200 dark:border-zinc-700 rounded-lg p-4 bg-gray-50 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-zinc-700 transition duration-200">
+                        <div class="font-semibold">${ev.title}</div>
+                        <div class="text-sm text-gray-600">${ev.start?.toLocaleString()}</div>
+                        ${ev.extendedProps.description ? `<p class="mt-2">${ev.extendedProps.description}</p>` : ""}
+                        ${ev.extendedProps.url ? `<a href="${ev.extendedProps.url}" class="text-blue-500 underline text-sm" target="_blank">View More</a>` : ""}
+                    </li>
+                `).join("")
+                : '<li class="text-gray-500 dark:text-gray-400">No events found</li>';
+        }
+    });
+</script>
+{% endblock %}

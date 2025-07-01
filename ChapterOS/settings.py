@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.recruitments",
     "apps.form_builder",
+    "apps.calendar_app",
 ]
 
 MIDDLEWARE = [
