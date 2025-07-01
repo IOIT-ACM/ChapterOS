@@ -17,24 +17,44 @@
             <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ChapterOS</span>
           </a>
           
-          <div class="hidden md:flex items-center space-x-1">
-            <a href="/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-              <i class="fas fa-home"></i>
-              <span>Home</span>
-            </a>
-            <a href="/recruitments/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-              <i class="fas fa-users"></i>
-              <span>Recruitments</span>
-            </a>
-            <a href="/form_builder/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
-              <i class="fas fa-hammer"></i>
-              <span>Form Builder</span>
-            </a>
-          </div>
+          <div class="flex items-center">
+            <div class="hidden md:flex items-center space-x-1">
+              <a href="/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+              </a>
+              {% if user.is_authenticated %}
+              <a href="/recruitments/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+                <i class="fas fa-users"></i>
+                <span>Recruitments</span>
+              </a>
+              <a href="/form_builder/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+                <i class="fas fa-hammer"></i>
+                <span>Form Builder</span>
+              </a>
+              {% endif %}
+            </div>
 
-          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-            <i class="fas fa-bars text-gray-600"></i>
-          </button>
+            <div class="hidden md:flex items-center space-x-4 ml-6">
+              {% if user.is_authenticated %}
+                <a href="{% url 'users:dashboard' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
+                {% if 'Admin' in user_roles %}
+                  <a href="{% url 'users:admin_conference' %}" class="px-4 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
+                {% endif %}
+                <form action="{% url 'users:logout' %}" method="post" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200">Logout</button>
+                </form>
+              {% else %}
+                <a href="{% url 'users:login' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Sign In</a>
+                <a href="{% url 'users:register' %}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">Register</a>
+              {% endif %}
+            </div>
+
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ml-4">
+              <i class="fas fa-bars text-gray-600"></i>
+            </button>
+          </div>
         </div>
 
         <div id="mobile-menu" class="md:hidden mt-4 pb-4 hidden">
@@ -43,6 +63,7 @@
               <i class="fas fa-home w-5"></i>
               <span>Home</span>
             </a>
+            {% if user.is_authenticated %}
             <a href="/recruitments/" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
               <i class="fas fa-users w-5"></i>
               <span>Recruitments</span>
@@ -51,12 +72,51 @@
               <i class="fas fa-hammer w-5"></i>
               <span>Form Builder</span>
             </a>
+            {% endif %}
+            <div class="border-t border-gray-200 my-2"></div>
+            {% if user.is_authenticated %}
+              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <i class="fas fa-tachometer-alt w-5"></i>
+                <span>Dashboard</span>
+              </a>
+              {% if 'Admin' in user_roles %}
+                <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200">
+                  <i class="fas fa-user-shield w-5"></i>
+                  <span>Admin</span>
+                </a>
+              {% endif %}
+              <form action="{% url 'users:logout' %}" method="post" class="w-full">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                  <i class="fas fa-sign-out-alt w-5"></i>
+                  <span>Logout</span>
+                </button>
+              </form>
+            {% else %}
+              <a href="{% url 'users:login' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <i class="fas fa-sign-in-alt w-5"></i>
+                <span>Sign In</span>
+              </a>
+              <a href="{% url 'users:register' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <i class="fas fa-user-plus w-5"></i>
+                <span>Register</span>
+              </a>
+            {% endif %}
           </div>
         </div>
       </nav>
     </header>
 
     <main class="flex-1 container mx-auto px-6 py-8">
+        {% if messages %}
+            <div class="mb-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-md {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
         {% block content %} {% endblock %}
     </main>
 
@@ -115,10 +175,8 @@
         const navLinks = document.querySelectorAll('.nav-link, #mobile-menu a');
         
         navLinks.forEach(link => {
-          if (link.getAttribute('href') === currentPath || 
-              (currentPath === '/' && link.getAttribute('href') === '/') ||
-              (currentPath.startsWith('/recruitments') && link.getAttribute('href') === '/recruitments/') ||
-              (currentPath.startsWith('/form_builder') && link.getAttribute('href') === '/form_builder/')) {
+          const linkPath = link.getAttribute('href');
+          if (linkPath && (linkPath === currentPath || (currentPath.startsWith(linkPath) && linkPath !== '/'))) {
             link.classList.add('text-blue-600', 'bg-blue-50');
             link.classList.remove('text-gray-600');
           }
