@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, UserProfileForm
 from django.contrib.auth.models import Group
 from django.contrib import messages
 
@@ -39,3 +39,19 @@ def dashboard_view(request):
 @user_passes_test(is_admin, login_url='users:dashboard')
 def admin_conference_view(request):
     return render(request, 'users/admin_conference.html')
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('users:profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    context = {
+        'form': form
+    }
+    return render(request, 'users/profile.html', context)

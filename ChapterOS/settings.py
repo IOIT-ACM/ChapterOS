@@ -8,7 +8,7 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = "django-insecure-_nx4cy%3a80ozf+#(rwq=v_o640^y*an=cqrm=#qkjknrf0zv4"
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['www.os.ioit.acm.org','os.ioit.acm.org', 'localhost', '127.0.0.1']
 

@@ -38,6 +38,7 @@
             <div class="hidden md:flex items-center space-x-4 ml-6">
               {% if user.is_authenticated %}
                 <a href="{% url 'users:dashboard' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
+                <a href="{% url 'users:profile' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Profile</a>
                 {% if 'Admin' in user_roles %}
                   <a href="{% url 'users:admin_conference' %}" class="px-4 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
                 {% endif %}
@@ -78,6 +79,10 @@
               <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                 <i class="fas fa-tachometer-alt w-5"></i>
                 <span>Dashboard</span>
+              </a>
+              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <i class="fas fa-user-circle w-5"></i>
+                <span>Profile</span>
               </a>
               {% if 'Admin' in user_roles %}
                 <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200">
@@ -154,7 +159,6 @@
         mobileMenuBtn.addEventListener('click', function() {
           mobileMenu.classList.toggle('hidden');
           
-          // Toggle icon
           if (mobileMenu.classList.contains('hidden')) {
             menuIcon.className = 'fas fa-bars text-gray-600';
           } else {
@@ -162,7 +166,6 @@
           }
         });
 
-        // Close mobile menu when clicking outside
         document.addEventListener('click', function(event) {
           if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
             mobileMenu.classList.add('hidden');
@@ -170,7 +173,6 @@
           }
         });
 
-        // Highlight active page
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('.nav-link, #mobile-menu a');
         
@@ -182,7 +184,6 @@
           }
         });
 
-        // Add smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
           anchor.addEventListener('click', function (e) {
             e.preventDefault();
