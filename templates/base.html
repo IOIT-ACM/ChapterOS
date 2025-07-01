@@ -37,15 +37,34 @@
 
             <div class="hidden md:flex items-center space-x-4 ml-6">
               {% if user.is_authenticated %}
-                <a href="{% url 'users:dashboard' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
-                <a href="{% url 'users:profile' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Profile</a>
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                        <span>Profile</span>
+                        <i class="fas fa-chevron-down text-xs transition-transform duration-200 group-hover:rotate-180"></i>
+                    </button>
+                    <div class="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden group-hover:block ring-1 ring-black ring-opacity-5">
+                        <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user-circle w-5"></i>
+                            <span>View Profile</span>
+                        </a>
+                        <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user-edit w-5"></i>
+                            <span>Edit Profile</span>
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form action="{% url 'users:logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt w-5"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 {% if 'Admin' in user_roles %}
                   <a href="{% url 'users:admin_conference' %}" class="px-3 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
                 {% endif %}
-                <form action="{% url 'users:logout' %}" method="post" class="inline">
-                  {% csrf_token %}
-                  <button type="submit" class="px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200">Logout</button>
-                </form>
               {% else %}
                 <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Sign In</a>
                 <a href="{% url 'users:register' %}" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">Register</a>
@@ -76,13 +95,17 @@
             {% endif %}
             <div class="border-t border-gray-200 my-2"></div>
             {% if user.is_authenticated %}
-              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+              <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                 <i class="fas fa-tachometer-alt w-5"></i>
                 <span>Dashboard</span>
               </a>
-              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                 <i class="fas fa-user-circle w-5"></i>
-                <span>Profile</span>
+                <span>View Profile</span>
+              </a>
+              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                <i class="fas fa-user-edit w-5"></i>
+                <span>Edit Profile</span>
               </a>
               {% if 'Admin' in user_roles %}
                 <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200">
@@ -112,7 +135,7 @@
       </nav>
     </header>
 
-    <main class="flex-1 container mx-auto px-6 py-8">
+    <main class="flex-1 container mx-auto md:px-6 px-3 py-8">
         {% if messages %}
             <div class="mb-6">
             {% for message in messages %}
