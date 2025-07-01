@@ -31,9 +31,6 @@ class CustomUser(AbstractUser):
         ('INSTRU', 'Instrumentation Engineering'),
     ]
 
-    first_name = None
-    last_name = None
-
     full_name = models.CharField(max_length=255, blank=True)
     mobile_number_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     mobile_number = models.CharField(validators=[mobile_number_validator], max_length=17, blank=True)
