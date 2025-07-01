@@ -9,3 +9,8 @@ urlpatterns = [
     path("recruitments/", include("apps.recruitments.urls")),
     path("form_builder/", include("apps.form_builder.urls")),
 ]
+
+handler400 = 'ChapterOS.views.handler400'
+handler403 = 'ChapterOS.views.handler403'
+handler404 = 'ChapterOS.views.handler404'
+handler500 = 'ChapterOS.views.handler500'

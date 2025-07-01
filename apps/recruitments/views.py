@@ -23,8 +23,12 @@ def recruitment_responses_view(request):
     Renders the HTML shell for the recruitment responses page.
     All data fetching and rendering is handled by client-side JavaScript.
     """
+    user_groups = set(request.user.groups.values_list('name', flat=True))
+    can_view_sensitive_data = any(role in user_groups for role in ['Admin', 'Core', 'Advisory'])
+
     context = {
-        'recruitment_drive_name': "ACM Committee Recruitment 2025-26"
+        'recruitment_drive_name': "ACM Committee Recruitment 2025-26 (July 2025)",
+        'can_view_sensitive_data': can_view_sensitive_data,
     }
     return render(request, "recruitments/responses.html", context)
 
