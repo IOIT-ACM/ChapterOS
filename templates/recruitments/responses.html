@@ -7,19 +7,31 @@
 <div class="">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
         <div class="space-y-2">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 class="md:text-2xl text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {{ recruitment_drive_name }}
             </h1>
         </div>
-        {% if 'Team' in user_roles or 'Admin' in user_roles %}
-        <a href="{% url 'recruitments:export_responses_csv' %}" 
-            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 whitespace-nowrap text-sm">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        <div class="flex items-center gap-3">
+            
+        <button id="view-stats-btn" 
+                class="flex fixed md:relative z-40 bottom-8 right-8 md:bottom-auto md:right-auto items-center px-5 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform whitespace-nowrap text-base disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled>
+            <svg class="w-6 h-6 mr-0 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
             </svg>
-            Export to CSV
-        </a>
-        {% endif %}
+            <span class="hidden md:inline">View Stats</span>
+        </button>
+
+            {% if 'Team' in user_roles or 'Admin' in user_roles %}
+            <a href="{% url 'recruitments:export_responses_csv' %}" 
+                class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform whitespace-nowrap text-sm">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Export to CSV
+            </a>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -44,7 +56,7 @@
                 </svg>
                 <input type="text" id="search-box" 
                        placeholder="Search by name..." 
-                       class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm transition-all duration-200" 
+                       class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white/80 backdrop-blur-sm transition-all duration-200 disabled:cursor-not-allowed" 
                        disabled>
             </div>
 
@@ -94,6 +106,8 @@
     </div>
 </div>
 
+{% include "recruitments/stats_modal.html" %}
+
 <style>
 #details-panel::-webkit-scrollbar {
   width: 3px;
@@ -115,6 +129,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const roleFilter = document.getElementById('role-filter');
     const sortOption = document.getElementById('sort-option');
     const clearFiltersBtn = document.getElementById('clear-filters');
+
+    const viewStatsBtn = document.getElementById('view-stats-btn');
+    const statsModal = document.getElementById('stats-modal');
+    const statsModalContent = document.getElementById('stats-modal-content');
+    const closeStatsModalBtn = document.getElementById('close-stats-modal');
+    const branchStatsContainer = document.getElementById('branch-stats-container');
+    const positionStatsContainer = document.getElementById('position-stats-container');
+    const statsTotalResponses = document.getElementById('stats-total-responses');
 
     let responsesMap = new Map();
     let allApplicants = [];
@@ -146,12 +168,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function populateFilters() {
-        // Populate department filter
         const departments = [...new Set(allApplicants.map(a => a.branch))].sort();
         departmentFilter.innerHTML = '<option value="">All Departments</option>' +
             departments.map(dept => `<option value="${escapeHtml(dept)}">${escapeHtml(dept)}</option>`).join('');
 
-        // Populate role filter
         const roles = [...new Set(allApplicants.map(a => a.roleType))].sort();
         roleFilter.innerHTML = '<option value="">All Roles</option>' +
             roles.map(role => `<option value="${escapeHtml(role)}">${escapeHtml(role)}</option>`).join('');
@@ -190,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
         renderApplicantList();
         updateApplicantCount();
 
-        // Show/hide clear filters button
         const hasActiveFilters = searchTerm || selectedDept || selectedRole || sortBy !== 'name-asc';
         clearFiltersBtn.classList.toggle('hidden', !hasActiveFilters);
     }
@@ -241,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </a>`;
         }).join('');
 
-        // Auto-select first applicant if none selected
         const selectedItem = applicantListContainer.querySelector('.bg-blue-100');
         if (!selectedItem && filteredApplicants.length > 0) {
             renderApplicantDetails(filteredApplicants[0].id);
@@ -359,15 +377,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             responsesMap = new Map(data.map(item => [item.id, item]));
             
-            // Enable controls
             if(canViewSensitiveData){
                 searchBox.disabled = false;
             }
             departmentFilter.disabled = false;
             roleFilter.disabled = false;
             sortOption.disabled = false;
+            viewStatsBtn.disabled = false;
 
-            // Populate filters and render
             populateFilters();
             applyFilters();
 
@@ -415,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Event Listeners
     applicantListContainer.addEventListener('click', (e) => {
         const item = e.target.closest('.applicant-item');
         if (item) {
@@ -425,13 +441,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Filter and search event listeners
     searchBox.addEventListener('input', applyFilters);
     departmentFilter.addEventListener('change', applyFilters);
     roleFilter.addEventListener('change', applyFilters);
     sortOption.addEventListener('change', applyFilters);
 
-    // Clear filters
     clearFiltersBtn.addEventListener('click', () => {
         searchBox.value = '';
         departmentFilter.value = '';
@@ -440,7 +454,72 @@ document.addEventListener('DOMContentLoaded', function() {
         applyFilters();
     });
 
-    // Keyboard navigation
+    function renderStatsList(container, statsObject, title) {
+        if (!statsObject || Object.keys(statsObject).length === 0) {
+            container.innerHTML = `<p class="text-sm text-gray-500">No data available for ${title}.</p>`;
+            return;
+        }
+
+        const sortedStats = Object.entries(statsObject).sort(([, a], [, b]) => b - a);
+
+        container.innerHTML = sortedStats.map(([key, value]) => `
+            <div class="flex justify-between items-center text-sm p-2 bg-slate-50 rounded-md border border-slate-200">
+                <span class="font-medium text-slate-700">${escapeHtml(key)}</span>
+                <span class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">${value}</span>
+            </div>
+        `).join('');
+    }
+
+    function calculateAndRenderStats() {
+        if (allApplicants.length === 0) {
+            branchStatsContainer.innerHTML = '<p class="text-sm text-gray-500">No applications to analyze.</p>';
+            positionStatsContainer.innerHTML = '<p class="text-sm text-gray-500">No applications to analyze.</p>';
+            statsTotalResponses.textContent = '0';
+            return;
+        }
+
+        const branchCounts = allApplicants.reduce((acc, applicant) => {
+            const branch = applicant.branch || 'Not Specified';
+            acc[branch] = (acc[branch] || 0) + 1;
+            return acc;
+        }, {});
+
+        const positionCounts = allApplicants.reduce((acc, applicant) => {
+            const role = applicant.roleType || 'Not Specified';
+            acc[role] = (acc[role] || 0) + 1;
+            return acc;
+        }, {});
+
+        renderStatsList(branchStatsContainer, branchCounts, 'Branch');
+        renderStatsList(positionStatsContainer, positionCounts, 'Position');
+        statsTotalResponses.textContent = allApplicants.length;
+    }
+
+    function openStatsModal() {
+        calculateAndRenderStats();
+        statsModal.classList.remove('hidden');
+        setTimeout(() => {
+            statsModal.classList.remove('opacity-0');
+            statsModalContent.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+
+    function closeStatsModal() {
+        statsModal.classList.add('opacity-0');
+        statsModalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            statsModal.classList.add('hidden');
+        }, 300);
+    }
+
+    viewStatsBtn.addEventListener('click', openStatsModal);
+    closeStatsModalBtn.addEventListener('click', closeStatsModal);
+    statsModal.addEventListener('click', (e) => {
+        if (e.target === statsModal) {
+            closeStatsModal();
+        }
+    });
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             const currentSelected = applicantListContainer.querySelector('.bg-blue-100\\/80');
@@ -465,9 +544,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             e.preventDefault();
         }
+        if (e.key === 'Escape' && !statsModal.classList.contains('hidden')) {
+            closeStatsModal();
+        }
     });
 
-    // Initialize
     loadRecruitmentData();
 });
 </script>
