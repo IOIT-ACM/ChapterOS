@@ -9,26 +9,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   </head>
   <body class="h-full bg-gradient-to-br from-slate-50 to-blue-50 text-gray-800 font-sans flex flex-col min-h-screen">
-    <header class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-50">
-      <nav class="container mx-auto px-6 py-4">
+    <header class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100 z-50">
+      <nav class="container mx-auto px-3 py-2">
         <div class="flex justify-between items-center">
           <a href="/" class="flex items-center space-x-3 group">
             <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
             <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ChapterOS</span>
           </a>
           
-          <div class="flex items-center">
+          <div class="flex items-center text-sm">
             <div class="hidden md:flex items-center space-x-1">
-              <a href="/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+              <a href="/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
               </a>
               {% if user.is_authenticated %}
-              <a href="/recruitments/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+              <a href="/recruitments/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
                 <i class="fas fa-users"></i>
                 <span>Recruitments</span>
               </a>
-              <a href="/form_builder/" class="nav-link px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
+              <a href="/form_builder/" class="nav-link px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2">
                 <i class="fas fa-hammer"></i>
                 <span>Form Builder</span>
               </a>
@@ -37,18 +37,18 @@
 
             <div class="hidden md:flex items-center space-x-4 ml-6">
               {% if user.is_authenticated %}
-                <a href="{% url 'users:dashboard' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
-                <a href="{% url 'users:profile' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Profile</a>
+                <a href="{% url 'users:dashboard' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
+                <a href="{% url 'users:profile' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Profile</a>
                 {% if 'Admin' in user_roles %}
-                  <a href="{% url 'users:admin_conference' %}" class="px-4 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
+                  <a href="{% url 'users:admin_conference' %}" class="px-3 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-semibold">Admin</a>
                 {% endif %}
                 <form action="{% url 'users:logout' %}" method="post" class="inline">
                   {% csrf_token %}
-                  <button type="submit" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200">Logout</button>
+                  <button type="submit" class="px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all duration-200">Logout</button>
                 </form>
               {% else %}
-                <a href="{% url 'users:login' %}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Sign In</a>
-                <a href="{% url 'users:register' %}" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">Register</a>
+                <a href="{% url 'users:login' %}" class="px-3 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Sign In</a>
+                <a href="{% url 'users:register' %}" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200">Register</a>
               {% endif %}
             </div>
 
@@ -126,11 +126,11 @@
     </main>
 
     <footer class="bg-white/80 backdrop-blur-sm border-t border-gray-100 mt-auto">
-      <div class="container mx-auto px-6 py-6">
+      <div class="container mx-auto px-3 py-3">
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div class="flex items-center space-x-3">
             <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
-            <span class="text-gray-600 font-medium">ChapterOS</span>
+            <span class="text-gray-600 font-medium text-sm">ChapterOS</span>
           </div>
           <div class="text-center text-gray-500 text-sm">
             <p>© 2024 IOIT ACM Student Chapter. All rights reserved.</p>

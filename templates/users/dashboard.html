@@ -6,7 +6,7 @@
 <div class="bg-white p-8 rounded-lg shadow-md">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-bold mb-2">Welcome, {{ user.full_name|default:user.username }}!</h1>
+            <h1 class="text-2xl font-bold mb-2">Welcome, {{ user.full_name|default:user.username }}!</h1>
             <span>{{ user.username }}</span>
             <div class="text-gray-700 mb-2 flex flex-wrap items-center gap-2">
                 <span>Your roles:</span>
