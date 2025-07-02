@@ -1,34 +1,63 @@
-<div id="stats-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full md:max-w-3xl max-w-[90%] max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300" id="stats-modal-content">
-        <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
-            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+<div id="stats-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0 overflow-hidden">
+    <div class="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300" id="stats-modal-content">
+        <div class="flex justify-between items-center border-b border-slate-200 p-4">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-3">
+                <i class="fas fa-chart-pie text-blue-500"></i>
                 Response Statistics
             </h3>
-            <button id="close-stats-modal" class="text-gray-400 hover:text-gray-700 transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <button id="close-stats-modal" class="text-slate-400 hover:text-slate-700 transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
         
-        <div class="overflow-y-auto flex-grow pr-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h4 class="font-semibold text-gray-700 mb-3 text-base">Responses by Branch</h4>
-                    <div id="branch-stats-container" class="space-y-2">
-                        <p class="text-sm text-gray-500">Calculating...</p>
+        <div class="overflow-y-auto flex-grow p-4 md:p-6 space-y-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-medium">Total Responses</p>
+                    <p id="stats-total-responses" class="text-2xl font-bold text-blue-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-medium">First Day</p>
+                    <p id="stats-first-day" class="text-xl md:text-2xl font-bold text-slate-700">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-medium">Peak Day</p>
+                    <p id="stats-peak-day" class="text-xl md:text-2xl font-bold text-slate-700">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-medium">Peak Count</p>
+                    <p id="stats-peak-count" class="text-2xl font-bold text-slate-700">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <h4 class="font-semibold text-slate-700 mb-4 text-base">Submissions Over Time</h4>
+                <div id="timeline-chart-container" class="w-full h-64">
+                    <p class="text-sm text-slate-500 text-center pt-10">Calculating...</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 class="font-semibold text-slate-700 mb-3 text-base">By Branch</h4>
+                    <div id="branch-stats-container" class="space-y-3">
+                        <p class="text-sm text-slate-500">Calculating...</p>
                     </div>
                 </div>
-
-                <div>
-                    <h4 class="font-semibold text-gray-700 mb-3 text-base">Responses by Position</h4>
-                    <div id="position-stats-container" class="space-y-2">
-                        <p class="text-sm text-gray-500">Calculating...</p>
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 class="font-semibold text-slate-700 mb-3 text-base">By Year</h4>
+                    <div id="year-stats-container" class="space-y-3">
+                        <p class="text-sm text-slate-500">Calculating...</p>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="text-sm text-gray-500 border-t border-gray-200 pt-3 mt-4">
-            Total Responses: <span id="stats-total-responses" class="font-bold">0</span>
+            
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <h4 class="font-semibold text-slate-700 mb-3 text-base">By Position Applied</h4>
+                <div id="position-stats-container" class="space-y-3">
+                    <p class="text-sm text-slate-500">Calculating...</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -152,9 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const statsModal = document.getElementById('stats-modal');
     const statsModalContent = document.getElementById('stats-modal-content');
     const closeStatsModalBtn = document.getElementById('close-stats-modal');
-    const branchStatsContainer = document.getElementById('branch-stats-container');
-    const positionStatsContainer = document.getElementById('position-stats-container');
+    
     const statsTotalResponses = document.getElementById('stats-total-responses');
+    const branchStatsContainer = document.getElementById('branch-stats-container');
+    const yearStatsContainer = document.getElementById('year-stats-container');
+    const positionStatsContainer = document.getElementById('position-stats-container');
+    const timelineChartContainer = document.getElementById('timeline-chart-container');
+    const statsFirstDay = document.getElementById('stats-first-day');
+    const statsPeakDay = document.getElementById('stats-peak-day');
+    const statsPeakCount = document.getElementById('stats-peak-count');
 
     const applicantSidebar = document.getElementById('applicant-sidebar');
     const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
@@ -561,46 +567,168 @@ document.addEventListener('DOMContentLoaded', function() {
         applyFilters();
     });
 
-    function renderStatsList(container, statsObject, title) {
-        if (!statsObject || Object.keys(statsObject).length === 0) {
-            container.innerHTML = `<p class="text-xs md:text-sm text-gray-500">No data available for ${title}.</p>`;
-            return;
-        }
-
-        const sortedStats = Object.entries(statsObject).sort(([, a], [, b]) => b - a);
-
-        container.innerHTML = sortedStats.map(([key, value]) => `
-            <div class="flex justify-between items-center text-xs md:text-sm p-2 bg-slate-50 rounded-md border border-slate-200">
-                <span class="font-medium text-slate-700">${escapeHtml(key)}</span>
-                <span class="font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">${value}</span>
-            </div>
-        `).join('');
-    }
-
     function calculateAndRenderStats() {
         if (allApplicants.length === 0) {
-            branchStatsContainer.innerHTML = '<p class="text-xs md:text-sm text-gray-500">No applications to analyze.</p>';
-            positionStatsContainer.innerHTML = '<p class="text-xs md:text-sm text-gray-500">No applications to analyze.</p>';
             statsTotalResponses.textContent = '0';
+            timelineChartContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            branchStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            yearStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            positionStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
             return;
         }
 
-        const branchCounts = allApplicants.reduce((acc, applicant) => {
-            if (!applicant.branch) return acc;
-            const branch = applicant.branch || 'Not Specified';
-            acc[branch] = (acc[branch] || 0) + 1;
-            return acc;
-        }, {});
+        const total = allApplicants.length;
+        statsTotalResponses.textContent = total;
 
-        const positionCounts = allApplicants.reduce((acc, applicant) => {
-            const role = applicant.roleType || 'Not Specified';
-            acc[role] = (acc[role] || 0) + 1;
-            return acc;
-        }, {});
+        const branchCounts = {}, yearCounts = {}, positionCounts = {}, dailyCounts = {};
 
-        renderStatsList(branchStatsContainer, branchCounts, 'Branch');
-        renderStatsList(positionStatsContainer, positionCounts, 'Position');
-        statsTotalResponses.textContent = allApplicants.length;
+        allApplicants.forEach(app => {
+            const branch = app.branch || 'Not Specified';
+            branchCounts[branch] = (branchCounts[branch] || 0) + 1;
+
+            const year = app.year || 'Not Specified';
+            yearCounts[year] = (yearCounts[year] || 0) + 1;
+
+            const position = app.roleType || 'Not Specified';
+            positionCounts[position] = (positionCounts[position] || 0) + 1;
+
+            if (app.date) {
+                const date = new Date(app.date).toISOString().split('T')[0];
+                dailyCounts[date] = (dailyCounts[date] || 0) + 1;
+            }
+        });
+
+        const branchColors = ['bg-blue-500', 'bg-teal-500', 'bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-purple-500', 'bg-rose-500'];
+        const yearColors = ['bg-green-500', 'bg-yellow-500', 'bg-orange-500', 'bg-red-500'];
+        const positionColors = ['bg-cyan-500', 'bg-fuchsia-500', 'bg-lime-500', 'bg-pink-500', 'bg-amber-500', 'bg-violet-500'];
+
+        renderBreakdownChart(branchStatsContainer, branchCounts, total, branchColors);
+        renderBreakdownChart(yearStatsContainer, yearCounts, total, yearColors);
+        renderBreakdownChart(positionStatsContainer, positionCounts, total, positionColors);
+        
+        const timelineStats = renderTimelineChart(timelineChartContainer, dailyCounts);
+
+        statsFirstDay.textContent = timelineStats.firstDay ? new Date(timelineStats.firstDay + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) : '-';
+        statsPeakDay.textContent = timelineStats.peakDay ? new Date(timelineStats.peakDay + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) : '-';
+        statsPeakCount.textContent = timelineStats.peakCount || 0;
+    }
+
+    function renderBreakdownChart(container, data, total, colors) {
+        const sortedData = Object.entries(data).sort(([, a], [, b]) => b - a);
+        
+        if (sortedData.length === 0) {
+            container.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            return;
+        }
+
+        container.innerHTML = sortedData.map(([label, count], index) => {
+            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+            const color = colors[index % colors.length];
+            return `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-slate-600">${escapeHtml(label)}</span>
+                        <span class="text-sm font-bold text-slate-800">${count}</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5">
+                        <div class="${color} h-2.5 rounded-full" style="width: ${percentage}%" title="${percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderTimelineChart(container, dailyData) {
+        const sortedDates = Object.keys(dailyData).sort((a, b) => new Date(a) - new Date(b));
+
+        if (sortedDates.length === 0) {
+            container.innerHTML = '<p class="text-sm text-slate-500 text-center w-full py-10">No submission date data available.</p>';
+            return { firstDay: null, peakDay: null, peakCount: 0 };
+        }
+
+        if (sortedDates.length === 1) {
+            container.innerHTML = '<p class="text-sm text-slate-500 text-center w-full py-10">Not enough data for a timeline chart (requires at least 2 days with submissions).</p>';
+            const date = sortedDates[0];
+            return { firstDay: date, peakDay: date, peakCount: dailyData[date] };
+        }
+
+        let peakCount = 0;
+        let peakDay = null;
+        const points = sortedDates.map(date => {
+            const count = dailyData[date];
+            if (count > peakCount) {
+                peakCount = count;
+                peakDay = date;
+            }
+            return { date, count };
+        });
+
+        const svgWidth = 800;
+        const svgHeight = 256;
+        const margin = { top: 20, right: 20, bottom: 40, left: 30 };
+        const chartWidth = svgWidth - margin.left - margin.right;
+        const chartHeight = svgHeight - margin.top - margin.bottom;
+
+        const getX = (index) => margin.left + (index / (points.length - 1)) * chartWidth;
+        const getY = (count) => chartHeight + margin.top - (count / (peakCount || 1)) * chartHeight;
+
+        const pathPoints = points.map((p, i) => `${getX(i)},${getY(p.count)}`).join(' ');
+
+        const areaPoints = `${getX(0)},${svgHeight - margin.bottom} ${pathPoints} ${getX(points.length - 1)},${svgHeight - margin.bottom}`;
+
+        const labels = points.map((p, i) => {
+            const x = getX(i);
+            const formattedDate = new Date(p.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+            return `<text x="${x}" y="${svgHeight - margin.bottom + 15}" class="text-xs fill-slate-500" text-anchor="middle">${formattedDate}</text>`;
+        }).join('');
+
+        const dataCircles = points.map((p, i) => {
+            const x = getX(i);
+            const y = getY(p.count);
+            return `<g class="group" transform="translate(${x}, ${y})">
+                <circle cx="0" cy="0" r="6" class="fill-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <circle cx="0" cy="0" r="4" class="fill-white stroke-2 stroke-blue-500" />
+                <text x="0" y="-10" text-anchor="middle" class="text-xs font-bold fill-slate-700 opacity-0 group-hover:opacity-100 transition-opacity">${p.count}</text>
+            </g>`;
+        }).join('');
+
+        const yAxisLabels = [];
+        const numTicks = Math.min(peakCount, 5);
+        if (numTicks > 0) {
+            for (let i = 0; i <= numTicks; i++) {
+                const value = Math.round((peakCount / numTicks) * i);
+                if (value > peakCount) continue;
+                const y = getY(value);
+                yAxisLabels.push(`<g transform="translate(0, ${y})">
+                    <line x1="${margin.left}" x2="${svgWidth - margin.right}" y1="0" y2="0" class="stroke-slate-200" stroke-dasharray="2,2"></line>
+                    <text x="${margin.left - 8}" y="4" class="text-xs fill-slate-500" text-anchor="end">${value}</text>
+                </g>`);
+            }
+        }
+
+        container.innerHTML = `
+            <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full max-h-fit" preserveAspectRatio="xMinYMin meet">
+                <defs>
+                    <linearGradient id="area-gradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <g class="y-axis-grid">
+                    ${yAxisLabels.join('')}
+                </g>
+                <g class="x-axis-labels">
+                    ${labels}
+                </g>
+                <polygon points="${areaPoints}" fill="url(#area-gradient)" />
+                <polyline points="${pathPoints}" fill="none" stroke="#3b82f6" stroke-width="2" />
+                <g class="data-points">
+                    ${dataCircles}
+                </g>
+            </svg>
+        `;
+
+        return { firstDay: sortedDates[0], peakDay: peakDay, peakCount: peakCount };
     }
 
     function openStatsModal() {
