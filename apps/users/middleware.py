@@ -6,13 +6,18 @@ class VisitorAccessMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and not request.user.is_staff:
             is_visitor_only = request.user.groups.filter(name='Visitor').exists() and request.user.groups.count() == 1
             
             if is_visitor_only:
-                logout_url = reverse('users:logout')
+                allowed_paths = [
+                    reverse('landing_page'),
+                    reverse('users:dashboard'),
+                    reverse('users:profile'),
+                    reverse('users:logout'),
+                ]
                 
-                if not request.user.is_staff and request.path != logout_url:
-                    raise PermissionDenied("Your account is pending approval. You do not have permission to access this site.")
+                if request.path not in allowed_paths:
+                    raise PermissionDenied("As a Visitor, you do not have permission to access this page. Your account is pending approval.")
 
         return self.get_response(request)

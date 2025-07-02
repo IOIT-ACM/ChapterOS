@@ -1,76 +1,279 @@
 {% load static %}
-<header class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100 z-50">
+
+<style>
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .header-gradient {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+  }
+
+  .logo-hover:hover {
+    animation: pulse 0.6s ease-in-out;
+  }
+
+  .nav-link {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    transition: left 0.3s ease;
+  }
+
+  .nav-link:hover::before {
+    left: 0;
+  }
+
+  .mobile-menu-enter {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .dropdown-menu {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 25%, #3b82f6 50%, #10b981 75%, #3b82f6 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .profile-avatar {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 2px transparent;
+  }
+
+  .profile-avatar:hover {
+    box-shadow: 0 0 0 2px #3b82f6;
+    transform: scale(1.1);
+  }
+
+  .mobile-menu-backdrop {
+    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.2);
+    height: 100vh;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-hidden {
+      display: none;
+    }
+  }
+</style>
+
+<header class="header-gradient backdrop-blur-md shadow-xl border-b border-white/20 sticky top-0 z-50">
   <div class="mx-auto container px-4 sm:px-6 lg:px-8">
-    <div class="flex h-16 items-center justify-between">
-      <!-- Site Logo -->
-      <a href="/" class="flex items-center space-x-3 group">
-        <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-10 h-10 rounded-lg shadow-md transition-transform duration-200">
-        <span class="md:text-2xl text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ChapterOS</span>
+    <div class="flex h-20 items-center justify-between">
+      <a href="{% url 'landing_page' %}" class="flex items-center space-x-4 group logo-hover">
+        <div class="relative">
+          <img src="{% static 'favicon.png' %}" alt="ChapterOS Logo" class="w-12 h-12 rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-xl">
+          <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-green-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+        <span class="text-2xl md:text-3xl font-bold shimmer-text">ChapterOS</span>
       </a>
 
-      <!-- Primary Navigation -->
-      <nav class="md:flex md:items-center md:gap-12">
-        <ul class="hidden md:flex items-center gap-6 text-sm">
-          {% if user.is_authenticated %}
-            <li><a href="/" class="nav-link text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200 flex items-center space-x-2"><i class="fas fa-home"></i><span>Home</span></a></li>
-            <li><a href="/recruitments/" class="nav-link text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200 flex items-center space-x-2"><i class="fas fa-users"></i><span>Recruitments</span></a></li>
-            <li><a href="/form_builder/" class="nav-link text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200 flex items-center space-x-2"><i class="fas fa-hammer"></i><span>Form Builder</span></a></li>
+      <nav class="hidden lg:flex items-center space-x-8">
+        {% if user.is_authenticated %}
+          <a href="{% url 'landing_page' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
+            <i class="fas fa-home text-lg"></i>
+            <span>Home</span>
+          </a>
+          {% if 'Visitor' not in user_roles or user_roles|length > 1 %}
+            <div class="relative group">
+              <a href="{% url 'recruitments:recruitments_index' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
+                <i class="fas fa-users text-lg"></i>
+                <span>Recruitments</span>
+                <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300 group-hover:rotate-180"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-64 dropdown-menu rounded-xl shadow-2xl py-2 z-30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
+                <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
+                  <i class="fas fa-list-ul w-5"></i>
+                  <span>All Drives</span>
+                </a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'recruitments:recruitment_responses' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
+                  <i class="fas fa-user-friends w-5"></i>
+                  <span>ACM Committee 2025-26</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-400 cursor-not-allowed">
+                  <i class="fas fa-lock w-5"></i>
+                  <span>Tenet Recruitment (Soon)</span>
+                </a>
+              </div>
+            </div>
+            <a href="{% url 'form_builder_index' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
+              <i class="fas fa-hammer text-lg"></i>
+              <span>Form Builder</span>
+            </a>
           {% endif %}
-        </ul>
+        {% endif %}
       </nav>
 
-      <!-- User Menu -->
-      <div class="hidden md:flex items-center space-x-4 ml-6">
+      <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
           <div class="relative group">
-            <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-all duration-200">
-              <img src="https://robohash.org/{{ user.id }}?size=32x32" alt="Profile Avatar" class="w-8 h-8 rounded-full">
-              <i class="fas fa-chevron-down text-xs transition-transform duration-200 group-hover:rotate-180"></i>
-            </a>
-            <div class="absolute right-0 mt-0 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden group-hover:block">
-              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:underline"><i class="fas fa-user-circle w-5"></i><span>View Profile</span></a>
-              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:underline"><i class="fas fa-user-edit w-5"></i><span>Edit Profile</span></a>
+            <button class="hidden md:flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-all duration-300 px-3 py-2 rounded-lg hover:bg-blue-50">
+              <img src="https://robohash.org/{{ user.id }}?size=48x48" alt="Profile Avatar" class="w-12 h-12 rounded-full profile-avatar">
+              <div class="hidden md:flex flex-col items-start">
+                <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>
+                <span class="text-xs text-gray-500">{{ user_roles.0|default:"User" }}</span>
+              </div>
+              <i class="fas fa-chevron-down text-sm transition-transform duration-300 group-hover:rotate-180"></i>
+            </button>
+            <div class="absolute right-0 mt-2 w-56 dropdown-menu rounded-xl shadow-2xl py-2 z-30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
+              <div class="px-4 py-3 border-b border-gray-100">
+                <p class="text-sm font-medium text-gray-900">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="text-xs text-gray-500">{{ user.email }}</p>
+              </div>
+              <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
+                <i class="fas fa-user-circle w-5"></i>
+                <span>View Profile</span>
+              </a>
+              <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
+                <i class="fas fa-user-edit w-5"></i>
+                <span>Edit Profile</span>
+              </a>
+              {% if 'Admin' in user_roles %}
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200">
+                  <i class="fas fa-user-shield w-5"></i>
+                  <span>Admin Panel</span>
+                </a>
+              {% endif %}
               <div class="border-t border-gray-100 my-1"></div>
-              <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 px-4 py-2 text-sm text-red-700 hover:underline"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a>
+              <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span>Sign Out</span>
+              </a>
             </div>
           </div>
-          {% if 'Admin' in user_roles %}
-            <a href="{% url 'users:admin_conference' %}" class="text-red-600 hover:text-red-700 hover:underline font-semibold transition-all duration-200">Admin</a>
-          {% endif %}
         {% else %}
-          <a href="{% url 'users:login' %}" class="text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200">Sign In</a>
-          <a href="{% url 'users:register' %}" class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-lg transition-all duration-200">Register</a>
+          <div class="hidden md:flex items-center space-x-3">
+            <a href="{% url 'users:login' %}" class="text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 px-4 py-2 rounded-lg hover:bg-blue-50">
+              Sign In
+            </a>
+            <a href="{% url 'users:register' %}" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-6 py-2 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              Get Started
+            </a>
+          </div>
         {% endif %}
-      </div>
 
-      <!-- Mobile menu toggle -->
-      <a href="#" id="mobile-menu-btn" class="block md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ml-4">
-        <i class="fas fa-bars text-gray-600"></i>
-      </a>
+        <button id="mobile-menu-btn" class="lg:hidden p-3 rounded-lg hover:bg-gray-100 transition-all duration-300">
+          <i class="fas fa-bars text-gray-700 text-xl"></i>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Mobile Menu -->
-  <div id="mobile-menu" class="md:hidden mt-4 pb-4 hidden">
-    <div class="flex flex-col space-y-2 px-4">
-      <a href="/" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-home w-5"></i><span>Home</span></a>
-      {% if user.is_authenticated %}
-        <a href="/recruitments/" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-users w-5"></i><span>Recruitments</span></a>
-        <a href="/form_builder/" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-hammer w-5"></i><span>Form Builder</span></a>
-      {% endif %}
-      <div class="border-t border-gray-200 my-2"></div>
-      {% if user.is_authenticated %}
-        <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span></a>
-        <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-user-circle w-5"></i><span>View Profile</span></a>
-        <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-user-edit w-5"></i><span>Edit Profile</span></a>
-        {% if 'Admin' in user_roles %}
-          <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 text-red-600 hover:text-red-700 hover:underline transition-all duration-200"><i class="fas fa-user-shield w-5"></i><span>Admin</span></a>
+  <div id="mobile-menu" class="lg:hidden fixed inset-x-0 top-20 mobile-menu-backdrop hidden">
+    <div class="mx-4 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden mobile-menu-enter">
+      <div class="p-6 space-y-4">
+        {% if user.is_authenticated %}
+          <div class="flex items-center space-x-4 pb-4 border-b border-gray-100">
+            <img src="https://robohash.org/{{ user.id }}?size=48x48" alt="Profile Avatar" class="w-12 h-12 rounded-full">
+            <div>
+              <p class="font-medium text-gray-900">{{ user.first_name|default:user.username }}</p>
+              <p class="text-sm text-gray-500">{{ user.email }}</p>
+            </div>
+          </div>
+          
+          <a href="{% url 'landing_page' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+            <i class="fas fa-home w-6 text-center"></i>
+            <span class="font-medium">Home</span>
+          </a>
+          
+          {% if 'Visitor' not in user_roles or user_roles|length > 1 %}
+            <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-users w-6 text-center"></i>
+              <span class="font-medium">Recruitments</span>
+            </a>
+            <a href="{% url 'form_builder_index' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-hammer w-6 text-center"></i>
+              <span class="font-medium">Form Builder</span>
+            </a>
+          {% endif %}
+          
+          <div class="border-t border-gray-100 pt-4 space-y-2">
+            <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-tachometer-alt w-6 text-center"></i>
+              <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-user-edit w-6 text-center"></i>
+              <span class="font-medium">Edit Profile</span>
+            </a>
+            {% if 'Admin' in user_roles %}
+              <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-lg transition-all duration-200">
+                <i class="fas fa-user-shield w-6 text-center"></i>
+                <span class="font-medium">Admin Panel</span>
+              </a>
+            {% endif %}
+            <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-sign-out-alt w-6 text-center"></i>
+              <span class="font-medium">Sign Out</span>
+            </a>
+          </div>
+        {% else %}
+          <div class="space-y-3">
+            <a href="{% url 'users:login' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
+              <i class="fas fa-sign-in-alt w-6 text-center"></i>
+              <span class="font-medium">Sign In</span>
+            </a>
+            <a href="{% url 'users:register' %}" class="flex items-center justify-center space-x-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-lg font-medium transition-all duration-200">
+              <i class="fas fa-user-plus"></i>
+              <span>Get Started</span>
+            </a>
+          </div>
         {% endif %}
-        <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-sign-out-alt w-5"></i><span>Logout</span></a>
-      {% else %}
-        <a href="{% url 'users:login' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-sign-in-alt w-5"></i><span>Sign In</span></a>
-        <a href="{% url 'users:register' %}" class="flex items-center space-x-3 text-gray-600 hover:text-blue-600 hover:underline transition-all duration-200"><i class="fas fa-user-plus w-5"></i><span>Register</span></a>
-      {% endif %}
+      </div>
     </div>
   </div>
 </header>
@@ -83,14 +286,24 @@
 
     mobileMenuBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      mobileMenu.classList.toggle('hidden');
-      menuIcon.className = mobileMenu.classList.contains('hidden') ? 'fas fa-bars text-gray-600' : 'fas fa-times text-gray-600';
+      const isHidden = mobileMenu.classList.contains('hidden');
+      
+      if (isHidden) {
+        mobileMenu.classList.remove('hidden');
+        menuIcon.className = 'fas fa-times text-gray-700 text-xl';
+        document.body.style.overflow = 'hidden';
+      } else {
+        mobileMenu.classList.add('hidden');
+        menuIcon.className = 'fas fa-bars text-gray-700 text-xl';
+        document.body.style.overflow = '';
+      }
     });
 
     document.addEventListener('click', function(event) {
       if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
         mobileMenu.classList.add('hidden');
-        menuIcon.className = 'fas fa-bars text-gray-600';
+        menuIcon.className = 'fas fa-bars text-gray-700 text-xl';
+        document.body.style.overflow = '';
       }
     });
 
@@ -98,8 +311,19 @@
     document.querySelectorAll('.nav-link, #mobile-menu a').forEach(link => {
       const linkPath = link.getAttribute('href');
       if (linkPath && (linkPath === currentPath || (currentPath.startsWith(linkPath) && linkPath !== '/'))) {
-        link.classList.add('text-blue-600', 'underline');
-        link.classList.remove('text-gray-600');
+        link.classList.add('text-blue-600', 'bg-blue-50');
+        link.classList.remove('text-gray-700');
+      }
+    });
+
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 10) {
+        header.classList.add('shadow-2xl');
+        header.classList.remove('shadow-xl');
+      } else {
+        header.classList.add('shadow-xl');
+        header.classList.remove('shadow-2xl');
       }
     });
   });

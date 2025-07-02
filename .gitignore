@@ -8,3 +8,5 @@ static/css/index.css
 *.py[cod]
 node_modules/
 .DS_Store
+
+logs
