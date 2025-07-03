@@ -1,7 +1,7 @@
 {
   "name": "ChapterOS",
   "short_name": "ChapterOS",
-  "description": "The official web application for IOIT ACM events and updates.",
+  "description": "The official web application for AISSMS IOIT ACM events and updates.",
   "icons": [
     {
       "src": "/static/web-app-manifest-192x192.png",

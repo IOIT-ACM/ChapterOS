@@ -1,6 +1,6 @@
-# ChapterOS - IOIT ACM Internal Dashboard
+# ChapterOS - AISSMS IOIT ACM Internal Dashboard
 
-ChapterOS is the central management hub for the IOIT ACM Student Chapter. It's an internal web application designed to streamline committee operations, from managing recruitment and analyzing statistics to planning events and maintaining documentation and annual events calender.
+ChapterOS is the central management hub for the AISSMS IOIT ACM Student Chapter. It's an internal web application designed to streamline committee operations, from managing recruitment and analyzing statistics to planning events and maintaining documentation and annual events calender.
 
 **Landing Page**
 ![Landing Page](docs/landing.jpeg)
