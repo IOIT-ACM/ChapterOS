@@ -108,34 +108,34 @@
       <nav class="hidden lg:flex items-center space-x-8">
         {% if user.is_authenticated %}
           <a href="{% url 'landing_page' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
-            <i class="fas fa-home text-lg"></i>
+            <span class="material-symbols-outlined text-lg">home</span>
             <span>Home</span>
           </a>
           {% if 'Visitor' not in user_roles or user_roles|length > 1 %}
             <div class="relative group">
               <a href="{% url 'recruitments:recruitments_index' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
-                <i class="fas fa-users text-lg"></i>
+                <span class="material-symbols-outlined text-lg">group</span>
                 <span>Recruitments</span>
-                <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300 group-hover:rotate-180"></i>
+                <span class="material-symbols-outlined text-sm ml-1 transition-transform duration-300 group-hover:rotate-180">expand_more</span>
               </a>
               <div class="absolute left-0 mt-2 w-64 dropdown-menu rounded-xl shadow-2xl py-2 z-30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
                 <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
-                  <i class="fas fa-list-ul w-5"></i>
+                  <span class="material-symbols-outlined w-5">list</span>
                   <span>All Drives</span>
                 </a>
                 <div class="border-t border-gray-100 my-1"></div>
                 <a href="{% url 'recruitments:recruitment_responses' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
-                  <i class="fas fa-user-friends w-5"></i>
+                  <span class="material-symbols-outlined w-5">group</span>
                   <span>ACM Committee 2025-26</span>
                 </a>
                 <a href="#" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-400 cursor-not-allowed">
-                  <i class="fas fa-lock w-5"></i>
+                  <span class="material-symbols-outlined w-5">lock</span>
                   <span>Tenet Recruitment (Soon)</span>
                 </a>
               </div>
             </div>
             <a href="{% url 'form_builder_index' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-blue-50">
-              <i class="fas fa-hammer text-lg"></i>
+              <span class="material-symbols-outlined text-lg">build</span>
               <span>Form Builder</span>
             </a>
           {% endif %}
@@ -151,7 +151,7 @@
                 <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>
                 <span class="text-xs text-gray-500">{{ user_roles.0|default:"User" }}</span>
               </div>
-              <i class="fas fa-chevron-down text-sm transition-transform duration-300 group-hover:rotate-180"></i>
+              <span class="material-symbols-outlined text-sm transition-transform duration-300 group-hover:rotate-180">expand_more</span>
             </button>
             <div class="absolute right-0 mt-2 w-56 dropdown-menu rounded-xl shadow-2xl py-2 z-30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
               <div class="px-4 py-3 border-b border-gray-100">
@@ -159,23 +159,23 @@
                 <p class="text-xs text-gray-500">{{ user.email }}</p>
               </div>
               <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
-                <i class="fas fa-user-circle w-5"></i>
+                <span class="material-symbols-outlined w-5">account_circle</span>
                 <span>View Profile</span>
               </a>
               <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
-                <i class="fas fa-user-edit w-5"></i>
+                <span class="material-symbols-outlined w-5">edit</span>
                 <span>Edit Profile</span>
               </a>
               {% if 'Admin' in user_roles %}
                 <div class="border-t border-gray-100 my-1"></div>
                 <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200">
-                  <i class="fas fa-user-shield w-5"></i>
+                  <span class="material-symbols-outlined w-5">admin_panel_settings</span>
                   <span>Admin Panel</span>
                 </a>
               {% endif %}
               <div class="border-t border-gray-100 my-1"></div>
               <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200">
-                <i class="fas fa-sign-out-alt w-5"></i>
+                <span class="material-symbols-outlined w-5">logout</span>
                 <span>Sign Out</span>
               </a>
             </div>
@@ -192,7 +192,7 @@
         {% endif %}
 
         <button id="mobile-menu-btn" class="lg:hidden p-3 rounded-lg hover:bg-gray-100 transition-all duration-300">
-          <i class="fas fa-bars text-gray-700 text-xl"></i>
+          <span class="material-symbols-outlined text-gray-700 text-2xl">menu</span>
         </button>
       </div>
     </div>
@@ -211,49 +211,49 @@
           </div>
           
           <a href="{% url 'landing_page' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-            <i class="fas fa-home w-6 text-center"></i>
+            <span class="material-symbols-outlined w-6 text-center">home</span>
             <span class="font-medium">Home</span>
           </a>
           
           {% if 'Visitor' not in user_roles or user_roles|length > 1 %}
             <a href="{% url 'recruitments:recruitments_index' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-users w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">group</span>
               <span class="font-medium">Recruitments</span>
             </a>
             <a href="{% url 'form_builder_index' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-hammer w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">build</span>
               <span class="font-medium">Form Builder</span>
             </a>
           {% endif %}
           
           <div class="border-t border-gray-100 pt-4 space-y-2">
             <a href="{% url 'users:dashboard' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-tachometer-alt w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">dashboard</span>
               <span class="font-medium">Dashboard</span>
             </a>
             <a href="{% url 'users:profile' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-user-edit w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">edit</span>
               <span class="font-medium">Edit Profile</span>
             </a>
             {% if 'Admin' in user_roles %}
               <a href="{% url 'users:admin_conference' %}" class="flex items-center space-x-3 text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-lg transition-all duration-200">
-                <i class="fas fa-user-shield w-6 text-center"></i>
+                <span class="material-symbols-outlined w-6 text-center">admin_panel_settings</span>
                 <span class="font-medium">Admin Panel</span>
               </a>
             {% endif %}
             <a href="{% url 'users:logout' %}" class="flex items-center space-x-3 text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-sign-out-alt w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">logout</span>
               <span class="font-medium">Sign Out</span>
             </a>
           </div>
         {% else %}
           <div class="space-y-3">
             <a href="{% url 'users:login' %}" class="flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 p-3 rounded-lg transition-all duration-200">
-              <i class="fas fa-sign-in-alt w-6 text-center"></i>
+              <span class="material-symbols-outlined w-6 text-center">login</span>
               <span class="font-medium">Sign In</span>
             </a>
             <a href="{% url 'users:register' %}" class="flex items-center justify-center space-x-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-lg font-medium transition-all duration-200">
-              <i class="fas fa-user-plus"></i>
+              <span class="material-symbols-outlined">person_add</span>
               <span>Get Started</span>
             </a>
           </div>
@@ -267,7 +267,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
-    const menuIcon = mobileMenuBtn.querySelector('i');
+    const menuIcon = mobileMenuBtn.querySelector('.material-symbols-outlined');
 
     mobileMenuBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -275,19 +275,19 @@
       
       if (isHidden) {
         mobileMenu.classList.remove('hidden');
-        menuIcon.className = 'fas fa-times text-gray-700 text-xl';
+        menuIcon.textContent = 'close';
         document.body.style.overflow = 'hidden';
       } else {
         mobileMenu.classList.add('hidden');
-        menuIcon.className = 'fas fa-bars text-gray-700 text-xl';
+        menuIcon.textContent = 'menu';
         document.body.style.overflow = '';
       }
     });
 
     document.addEventListener('click', function(event) {
-      if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+      if (!mobileMenu.classList.contains('hidden') && !mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
         mobileMenu.classList.add('hidden');
-        menuIcon.className = 'fas fa-bars text-gray-700 text-xl';
+        menuIcon.textContent = 'menu';
         document.body.style.overflow = '';
       }
     });
