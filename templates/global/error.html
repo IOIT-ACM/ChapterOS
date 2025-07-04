@@ -4,13 +4,13 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto text-center py-16">
-    <div class="bg-white p-8 rounded-lg shadow-lg border-t-4 border-red-500">
+    <div class="bg-neutral-900 p-8 rounded-lg shadow-lg border-t-4 border-red-500">
         <h1 class="text-6xl font-bold text-red-500 mb-4">{{ status_code }}</h1>
-        <h2 class="text-2xl font-semibold text-gray-800 mb-2">{{ reason_phrase }}</h2>
-        <p class="text-gray-600 mb-8">
+        <h2 class="text-2xl font-semibold text-white mb-2">{{ reason_phrase }}</h2>
+        <p class="text-neutral-400 mb-8">
             {{ message }}
         </p>
-        <a href="/" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md">
+        <a href="/" class="inline-flex items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-all duration-200 shadow-md">
             <span class="material-symbols-outlined mr-2">home</span>
             Go to Homepage
         </a>

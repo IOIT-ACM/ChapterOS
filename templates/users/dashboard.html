@@ -6,63 +6,63 @@
 <div class="min-h-[70vh]">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-2xl font-bold mb-2">Welcome, {{ user.full_name|default:user.username }}!</h1>
-            <span>{{ user.username }}</span>
-            <div class="text-gray-700 mb-2 flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-bold mb-2 text-white">Welcome, {{ user.full_name|default:user.username }}!</h1>
+            <span class="text-neutral-400">{{ user.username }}</span>
+            <div class="text-neutral-300 mb-2 flex flex-wrap items-center gap-2">
                 <span>Your roles:</span>
                 {% for role in user_roles %}
-                    <span class="font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full text-sm">{{ role }}</span>
+                    <span class="font-semibold text-orange-400 bg-orange-500/20 px-2 py-1 rounded-full text-sm">{{ role }}</span>
                 {% empty %}
-                    <span class="font-semibold text-gray-600">No roles assigned.</span>
+                    <span class="font-semibold text-neutral-500">No roles assigned.</span>
                 {% endfor %}
             </div>
         </div>
-        <a href="{% url 'users:profile' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+        <a href="{% url 'users:profile' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 whitespace-nowrap">
             <span class="material-symbols-outlined mr-2 text-base">edit</span>
             Edit Profile
         </a>
     </div>
     
     {% if 'Visitor' in user_roles and user_roles|length == 1 %}
-    <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-md" role="alert">
+    <div class="mt-6 bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-300 p-4 rounded-md" role="alert">
         <p class="font-bold">Awaiting Approval</p>
         <p>Your account is currently pending review. An administrator will assign your final role soon.</p>
     </div>
     {% endif %}
 
-    <div class="mt-8 border-t pt-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Information</h2>
+    <div class="mt-8 border-t border-neutral-800 pt-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Your Information</h2>
         {% if user.full_name or user.mobile_number or user.academic_year or user.branch or user.team %}
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Full Name</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.full_name|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Full Name</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.full_name|default:"Not set" }}</dd>
                 </div>
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Email Address</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.email|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Email Address</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.email|default:"Not set" }}</dd>
                 </div>
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Mobile Number</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.mobile_number|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Mobile Number</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.mobile_number|default:"Not set" }}</dd>
                 </div>
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Team</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.get_team_display|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Team</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.get_team_display|default:"Not set" }}</dd>
                 </div>
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Academic Year</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.get_academic_year_display|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Academic Year</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.get_academic_year_display|default:"Not set" }}</dd>
                 </div>
                 <div class="col-span-1">
-                    <dt class="font-medium text-gray-500">Branch</dt>
-                    <dd class="mt-1 text-gray-900">{{ user.get_branch_display|default:"Not set" }}</dd>
+                    <dt class="font-medium text-neutral-500">Branch</dt>
+                    <dd class="mt-1 text-neutral-300">{{ user.get_branch_display|default:"Not set" }}</dd>
                 </div>
             </dl>
         {% else %}
-            <div class="text-center py-6 bg-gray-50 rounded-lg">
-                <p class="text-gray-600">You haven't filled out your profile details yet.</p>
-                <a href="{% url 'users:profile' %}" class="mt-2 inline-block text-blue-600 hover:underline font-semibold">Complete your profile now</a>
+            <div class="text-center py-6 bg-neutral-900 rounded-lg border border-neutral-800">
+                <p class="text-neutral-400">You haven't filled out your profile details yet.</p>
+                <a href="{% url 'users:profile' %}" class="mt-2 inline-block text-orange-500 hover:underline font-semibold">Complete your profile now</a>
             </div>
         {% endif %}
     </div>

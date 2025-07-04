@@ -4,37 +4,37 @@
 
 {% block content %}
 <div class="min-h-[70vh]">
-    <h1 class="text-2xl font-bold mb-4">Recruitment Drives</h1>
-    <p class="text-gray-600 mb-8">Select a recruitment drive to view responses and analytics.</p>
+    <h1 class="text-2xl font-bold text-white mb-4">Recruitment Drives</h1>
+    <p class="text-neutral-400 mb-8">Select a recruitment drive to view responses and analytics.</p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <a href="{% url 'recruitments:recruitment_responses' %}" class="block p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border border-blue-200 group">
+        <a href="{% url 'recruitments:recruitment_responses' %}" class="block p-6 bg-neutral-900 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border border-neutral-700 hover:border-orange-500 group">
             <div class="flex items-center mb-3">
-                <div class="p-3 bg-blue-500 rounded-full mr-4 group-hover:bg-blue-600 transition-colors">
+                <div class="p-3 bg-orange-500 rounded-full mr-4 group-hover:bg-orange-600 transition-colors">
                     <span class="material-symbols-outlined text-white">group</span>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">ACM Committee 2025-26</h2>
-                    <p class="text-sm text-gray-500">Recruitment Drive</p>
+                    <h2 class="text-lg font-bold text-white">ACM Committee 2025-26</h2>
+                    <p class="text-sm text-neutral-400">Recruitment Drive</p>
                 </div>
             </div>
-            <p class="text-gray-600">View all student responses from the main committee recruitment drive for the 2025-26 session.</p>
-            <div class="mt-4 text-right text-blue-600 font-semibold">
+            <p class="text-neutral-400">View all student responses from the main committee recruitment drive for the 2025-26 session.</p>
+            <div class="mt-4 text-right text-orange-500 font-semibold">
                 View Responses →
             </div>
         </a>
 
-        <div class="block p-6 bg-gray-100 rounded-lg shadow-sm border border-gray-200 opacity-60 cursor-not-allowed">
+        <div class="block p-6 bg-neutral-900/50 rounded-lg shadow-sm border border-neutral-800 opacity-60 cursor-not-allowed">
             <div class="flex items-center mb-3">
-                <div class="p-3 bg-gray-400 rounded-full mr-4">
-                    <span class="material-symbols-outlined text-white">lock</span>
+                <div class="p-3 bg-neutral-700 rounded-full mr-4">
+                    <span class="material-symbols-outlined text-neutral-400">lock</span>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-gray-500">Tenet Recruitment</h2>
-                    <p class="text-sm text-gray-400">Coming Soon</p>
+                    <h2 class="text-lg font-bold text-neutral-500">Tenet Recruitment</h2>
+                    <p class="text-sm text-neutral-600">Coming Soon</p>
                 </div>
             </div>
-            <p class="text-gray-500">Tenet phase 1 recruitment begins soon..</p>
+            <p class="text-neutral-500">Tenet phase 1 recruitment begins soon..</p>
         </div>
     </div>
 </div>

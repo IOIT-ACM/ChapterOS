@@ -1,6 +1,6 @@
 {% load static %}
 
-<footer class="bg-gray-900 text-white">
+<footer class="bg-neutral-900 text-white border-t border-neutral-800">
   <div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
       <div>
@@ -8,30 +8,30 @@
             <img src="{% static 'favicon.png' %}" alt="AISSMS IOIT ACM Logo" class="h-10 w-10 rounded-lg">
             <span class="text-2xl font-bold">AISSMS IOIT ACM</span>
         </div>
-        <p class="mt-4 text-gray-400 text-sm leading-relaxed max-w-xs">
+        <p class="mt-4 text-neutral-400 text-sm leading-relaxed max-w-xs">
           The official student chapter of the Association for Computing Machinery at AISSMS Institute of Information Technology, Pune.
         </p>
         <ul class="mt-8 flex gap-6">
           <li>
-            <a href="https://www.linkedin.com/company/ioit-acm/" rel="noreferrer" target="_blank" class="text-gray-400 transition hover:text-white">
+            <a href="https://www.linkedin.com/company/ioit-acm/" rel="noreferrer" target="_blank" class="text-neutral-400 transition hover:text-white">
               <span class="sr-only">LinkedIn</span>
               <span class="material-symbols-outlined">group</span>
             </a>
           </li>
           <li>
-            <a href="https://www.instagram.com/ioit__acm" rel="noreferrer" target="_blank" class="text-gray-400 transition hover:text-white">
+            <a href="https://www.instagram.com/ioit__acm" rel="noreferrer" target="_blank" class="text-neutral-400 transition hover:text-white">
               <span class="sr-only">Instagram</span>
               <span class="material-symbols-outlined">photo_camera</span>
             </a>
           </li>
           <li>
-            <a href="https://github.com/ioit-acm/" rel="noreferrer" target="_blank" class="text-gray-400 transition hover:text-white">
+            <a href="https://github.com/ioit-acm/" rel="noreferrer" target="_blank" class="text-neutral-400 transition hover:text-white">
               <span class="sr-only">GitHub</span>
               <span class="material-symbols-outlined">code</span>
             </a>
           </li>
           <li>
-            <a href="https://ioit.acm.org/" rel="noreferrer" target="_blank" class="text-gray-400 transition hover:text-white">
+            <a href="https://ioit.acm.org/" rel="noreferrer" target="_blank" class="text-neutral-400 transition hover:text-white">
               <span class="sr-only">Website</span>
               <span class="material-symbols-outlined">public</span>
             </a>
@@ -44,17 +44,17 @@
           <p class="font-medium text-white">Chapter</p>
           <ul class="mt-6 space-y-4 text-sm">
             <li>
-              <a href="https://ioit.acm.org/" target="_blank" rel="noopener noreferrer" class="text-gray-400 transition hover:text-white">
+              <a href="https://ioit.acm.org/" target="_blank" rel="noopener noreferrer" class="text-neutral-400 transition hover:text-white">
                 Main Website
               </a>
             </li>
             <li>
-              <a href="https://ioit.acm.org/team" target="_blank" rel="noopener noreferrer" class="text-gray-400 transition hover:text-white">
+              <a href="https://ioit.acm.org/team" target="_blank" rel="noopener noreferrer" class="text-neutral-400 transition hover:text-white">
                 Meet the Team
               </a>
             </li>
             <li>
-              <a href="https://ioit.acm.org/events" target="_blank" rel="noopener noreferrer" class="text-gray-400 transition hover:text-white">
+              <a href="https://ioit.acm.org/events" target="_blank" rel="noopener noreferrer" class="text-neutral-400 transition hover:text-white">
                 Events
               </a>
             </li>
@@ -65,17 +65,17 @@
           <p class="font-medium text-white">ChapterOS</p>
           <ul class="mt-6 space-y-4 text-sm">
             <li>
-              <a href="{% url 'landing_page' %}" class="text-gray-400 transition hover:text-white">
+              <a href="{% url 'landing_page' %}" class="text-neutral-400 transition hover:text-white">
                 Dashboard Home
               </a>
             </li>
             <li>
-              <a href="{% url 'recruitments:recruitments_index' %}" class="text-gray-400 transition hover:text-white">
+              <a href="{% url 'recruitments:recruitments_index' %}" class="text-neutral-400 transition hover:text-white">
                 Recruitments
               </a>
             </li>
             <li>
-              <a href="{% url 'form_builder_index' %}" class="text-gray-400 transition hover:text-white">
+              <a href="{% url 'form_builder_index' %}" class="text-neutral-400 transition hover:text-white">
                 Form Builder
               </a>
             </li>
@@ -86,13 +86,13 @@
           <p class="font-medium text-white">Contact</p>
           <ul class="mt-6 space-y-4 text-sm">
             <li>
-                <a href="mailto:acm.studentbranch@aissmsioit.org" class="text-gray-400 transition hover:text-white flex items-center gap-2">
+                <a href="mailto:acm.studentbranch@aissmsioit.org" class="text-neutral-400 transition hover:text-white flex items-center gap-2">
                     <span class="material-symbols-outlined">mail</span>
                     acm.studentbranch@aissmsioit.org
                 </a>
             </li>
             <li>
-                <div class="text-gray-400 flex items-start gap-2">
+                <div class="text-neutral-400 flex items-start gap-2">
                     <span class="material-symbols-outlined mt-1">location_on</span>
                     <span>AISSMS Institute of Information Technology, Kennedy Road, Near RTO, Pune, Maharashtra 411001</span>
                 </div>
@@ -102,12 +102,12 @@
       </div>
     </div>
 
-    <div class="mt-12 border-t border-gray-800 pt-8">
+    <div class="mt-12 border-t border-neutral-800 pt-8">
       <div class="sm:flex sm:items-center sm:justify-between">
-        <p class="text-xs text-gray-500">
+        <p class="text-xs text-neutral-500">
           &copy; {% now "Y" %} AISSMS IOIT ACM Student Chapter. All rights reserved.
         </p>
-        <p class="mt-4 text-xs text-gray-500 sm:mt-0">
+        <p class="mt-4 text-xs text-neutral-500 sm:mt-0">
           Developed by the AISSMS IOIT ACM Web Team.
         </p>
       </div>

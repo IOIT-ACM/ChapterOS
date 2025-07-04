@@ -4,8 +4,8 @@
 
 {% block formcontent %}
 
-<h1 class="text-2xl font-bold mb-2 text-gray-800">My Profile</h1>
-<p class="text-gray-500 mb-8">View and edit your personal information.</p>
+<h1 class="text-2xl font-bold mb-2 text-white">My Profile</h1>
+<p class="text-neutral-400 mb-8">View and edit your personal information.</p>
 
 <form method="post" novalidate>
   {% csrf_token %}
@@ -17,7 +17,7 @@
       {% endfor %} {{ form.full_name }}
       <label
         for="{{ form.full_name.id_for_label }}"
-        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+        class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
       >
         {{ form.full_name.label }}
       </label>
@@ -28,7 +28,7 @@
       {% endfor %} {{ form.email }}
       <label
         for="{{ form.email.id_for_label }}"
-        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+        class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
       >
         {{ form.email.label }}
       </label>
@@ -41,7 +41,7 @@
     {% endfor %} {{ form.mobile_number }}
     <label
       for="{{ form.mobile_number.id_for_label }}"
-      class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+      class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 z-50 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
     >
       Mobile number (e.g., +919876543210)
     </label>
@@ -51,7 +51,7 @@
     <div class="w-full mb-5">
       <label
         for="{{ form.academic_year.id_for_label }}"
-        class="block mb-2 text-sm font-medium text-gray-700"
+        class="block mb-2 text-sm font-medium text-neutral-300"
       >
         {{ form.academic_year.label }}
       </label>
@@ -62,7 +62,7 @@
     <div class="w-full mb-5">
       <label
         for="{{ form.branch.id_for_label }}"
-        class="block mb-2 text-sm font-medium text-gray-700"
+        class="block mb-2 text-sm font-medium text-neutral-300"
       >
         {{ form.branch.label }}
       </label>
@@ -75,7 +75,7 @@
   <div class="w-full mb-5">
     <label
       for="{{ form.team.id_for_label }}"
-      class="block mb-2 text-sm font-medium text-gray-700"
+      class="block mb-2 text-sm font-medium text-neutral-300"
     >
       {{ form.team.label }}
     </label>
@@ -87,7 +87,7 @@
   <div class="mt-8">
     <button
       type="submit"
-      class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      class="w-full text-white bg-orange-500 hover:bg-orange-600 focus:ring-4 focus:outline-none focus:ring-orange-300/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
     >
       Save Changes
     </button>

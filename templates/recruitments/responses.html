@@ -7,14 +7,14 @@
 <div class="">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center md:py-6 gap-4">
         <div class="space-y-2">
-            <h1 class="md:text-2xl text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 class="md:text-2xl text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
                 {{ recruitment_drive_name }}
             </h1>
         </div>
         <div class="flex items-center gap-3">
             
         <button id="view-stats-btn" 
-                class="flex fixed md:relative z-40 bottom-8 right-8 md:bottom-auto md:right-auto items-center p-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform whitespace-nowrap text-base disabled:opacity-50 disabled:cursor-not-allowed" 
+                class="flex fixed md:relative z-40 bottom-8 right-8 md:bottom-auto md:right-auto items-center p-3 bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-neutral-300 font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform whitespace-nowrap text-base disabled:opacity-50 disabled:cursor-not-allowed" 
                 disabled>
             <svg class="w-6 h-6 mr-0 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -25,30 +25,30 @@
     </div>
 </div>
 
-<button id="mobile-filter-toggle" class="md:hidden fixed bottom-28 right-8 z-40 flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-transform transform">
+<button id="mobile-filter-toggle" class="md:hidden fixed bottom-28 right-8 z-40 flex items-center justify-center w-12 h-12 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-transform transform">
     <span class="material-symbols-outlined text-3xl">filter_list</span>
 </button>
 
 <div class="flex-grow grid grid-cols-12 gap-0">
-    <div id="applicant-sidebar" class="fixed bottom-0 left-0 right-0 h-[75vh] bg-white rounded-t-2xl shadow-2xl z-50 transform translate-y-full transition-transform duration-300 ease-in-out flex flex-col
-                                     md:relative md:h-auto md:col-span-4 md:bg-white/60 md:backdrop-blur-sm md:transform-none md:shadow-none md:rounded-none">
+    <div id="applicant-sidebar" class="fixed bottom-0 left-0 right-0 h-[75vh] bg-neutral-900 rounded-t-2xl shadow-2xl z-50 transform translate-y-full transition-transform duration-300 ease-in-out flex flex-col
+                                     md:relative md:h-auto md:col-span-4 md:bg-transparent md:transform-none md:shadow-none md:rounded-none">
         
-        <div class="md:hidden flex justify-between items-center p-3 border-b border-slate-200">
-            <h2 class="font-bold text-lg text-slate-800">Filters & Applicants</h2>
-            <button id="close-filter-sidebar" class="text-slate-500 hover:text-slate-800 p-1 rounded-full">
+        <div class="md:hidden flex justify-between items-center p-3 border-b border-neutral-700 bg-neutral-500 rounded-t-2xl">
+            <h2 class="font-bold text-lg text-white">Filters & Applicants</h2>
+            <button id="close-filter-sidebar" class="text-neutral-400 hover:text-white p-1 rounded-full">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
 
-        <div class="p-4 border-b border-slate-200 bg-white/40 backdrop-blur-sm space-y-4 md:border-0 md:border-b">
+        <div class="p-4 border-b border-neutral-500 bg-neutral-700 space-y-4 md:border-0 md:border-b">
             <div class="flex items-center justify-between">
-                <h2 id="applicant-count" class="text-xs md:text-sm font-semibold text-slate-800 flex items-center gap-2">
+                <h2 id="applicant-count" class="text-xs md:text-sm font-semibold text-white flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                     Applicants
                 </h2>
-                <button id="clear-filters" class="text-xs md:text-sm text-slate-500 hover:text-slate-700 underline hidden">
+                <button id="clear-filters" class="text-xs md:text-sm text-neutral-400 hover:text-white underline hidden">
                     Clear All
                 </button>
             </div>
@@ -56,34 +56,34 @@
             
             <div class="grid md:grid-cols-1 grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs md:text-sm font-medium text-slate-700 mb-1">Search</label>
+                    <label class="block text-xs md:text-sm font-medium text-neutral-300 mb-1">Search</label>
                     <div class="relative">
-                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         <input type="text" id="search-box" 
-                        placeholder="Search by name..." 
-                        class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs md:text-sm bg-white/80 backdrop-blur-sm transition-all duration-200 disabled:cursor-not-allowed" 
+                        placeholder="Search by name or application ID..." 
+                        class="w-full pl-10 pr-4 py-2.5 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-xs md:text-sm bg-neutral-800 text-white placeholder-neutral-400 transition-all duration-200 disabled:cursor-not-allowed" 
                         disabled>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs md:text-sm font-medium text-slate-700 mb-1">Department</label>
-                    <select id="department-filter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm bg-white/80 backdrop-blur-sm" disabled>
+                    <label class="block text-xs md:text-sm font-medium text-neutral-300 mb-1">Department</label>
+                    <select id="department-filter" class="w-full px-3 py-2 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm bg-neutral-800 text-white" disabled>
                         <option value="">All Departments</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs md:text-sm font-medium text-slate-700 mb-1">Team/Role</label>
-                    <select id="role-filter" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm bg-white/80 backdrop-blur-sm" disabled>
+                    <label class="block text-xs md:text-sm font-medium text-neutral-300 mb-1">Team/Role</label>
+                    <select id="role-filter" class="w-full px-3 py-2 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm bg-neutral-800 text-white" disabled>
                         <option value="">All Roles</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs md:text-sm font-medium text-slate-700 mb-1">Sort By</label>
-                    <select id="sort-option" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm bg-white/80 backdrop-blur-sm" disabled>
+                    <label class="block text-xs md:text-sm font-medium text-neutral-300 mb-1">Sort By</label>
+                    <select id="sort-option" class="w-full px-3 py-2 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs md:text-sm bg-neutral-800 text-white" disabled>
                         <option value="name-asc">Name (A-Z)</option>
                         <option value="name-desc">Name (Z-A)</option>
                         <option value="date-desc">Latest First</option>
@@ -94,8 +94,8 @@
         </div>
 
         <div id="applicant-list" class="overflow-y-auto flex-grow">
-            <div class="p-6 text-center text-slate-500">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
+            <div class="p-6 text-center text-neutral-500">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
                 <p>Fetching applicants...</p>
             </div>
         </div>
@@ -104,9 +104,9 @@
     <div id="details-panel" class="col-span-12 md:col-span-8 md:sticky md:top-5 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto md:h-fit">
         <div class="flex items-center justify-center h-full text-center p-8">
             <div class="space-y-4">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                <p class="text-slate-600 text-base font-medium">Fetching data...</p>
-                <p class="text-slate-500 text-xs md:text-sm">Please wait while we load the applications</p>
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <p class="text-neutral-400 text-base font-medium">Fetching data...</p>
+                <p class="text-neutral-500 text-xs md:text-sm">Please wait while we load the applications</p>
             </div>
         </div>
     </div>
@@ -171,10 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let allApplicants = [];
     let filteredApplicants = [];
 
-    if (!canViewSensitiveData) {
-        searchBox.placeholder = "Search by name, branch, role...";
-    }
-
     function escapeHtml(unsafe) {
         if (typeof unsafe !== 'string') return unsafe;
         return unsafe
@@ -229,7 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortBy = sortOption.value;
 
         let filtered = allApplicants.filter(applicant => {
-            const matchesSearch = applicant.fullName.toLowerCase().includes(searchTerm);
+            const nameMatch = applicant.fullName.toLowerCase().includes(searchTerm);
+            const idMatch = canViewSensitiveData && String(applicant.id).includes(searchTerm);
+            const matchesSearch = nameMatch || idMatch;
+
             const matchesDept = !selectedDept || applicant.branch === selectedDept;
             const matchesRole = !selectedRole || applicant.roleType === selectedRole;
             return matchesSearch && matchesDept && matchesRole;
@@ -246,8 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderApplicantList() {
         if (filteredApplicants.length === 0) {
             applicantListContainer.innerHTML = `
-                <div class="p-4 text-center text-slate-500 space-y-2">
-                    <svg class="w-8 h-8 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-4 text-center text-neutral-500 space-y-2">
+                    <svg class="w-8 h-8 mx-auto text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <p class="font-medium text-xs md:text-sm">No applications found</p>
@@ -256,11 +255,11 @@ document.addEventListener('DOMContentLoaded', function() {
             detailsPanel.innerHTML = `
                 <div class="flex items-center justify-center h-full text-center p-4">
                     <div class="space-y-2">
-                        <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-10 h-10 mx-auto text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <p class="font-medium text-xs md:text-sm text-slate-600">No applications to display</p>
-                        <p class="text-xs text-slate-500">Select an applicant from the list to view details</p>
+                        <p class="font-medium text-xs md:text-sm text-neutral-400">No applications to display</p>
+                        <p class="text-xs text-neutral-500">Select an applicant from the list to view details</p>
                     </div>
                 </div>`;
             return;
@@ -272,20 +271,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 : 'N/A';
             const applicantName = escapeHtml(applicant.fullName);
             const branchAndYear = (applicant.branch && applicant.year)
-                ? `<p class="text-xs text-slate-500 truncate">${escapeHtml(applicant.branch)} – ${escapeHtml(applicant.year)}</p>`
+                ? `<p class="text-xs text-neutral-400 truncate">${escapeHtml(applicant.branch)} – ${escapeHtml(applicant.year)}</p>`
                 : '';
 
             return `
-                <a href="#" class="applicant-item block p-2 border-b border-slate-100 hover:bg-blue-50/80 cursor-pointer transition-all duration-150 border-l-4 border-transparent hover:border-blue-400 group" data-id="${applicant.id}">
+                <a href="#" class="applicant-item block p-2 border-b border-neutral-800 hover:bg-neutral-800 cursor-pointer transition-all duration-150 border-l-4 border-transparent hover:border-orange-500 group" data-id="${applicant.id}">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-xs md:text-sm text-slate-800 truncate group-hover:text-blue-700 transition-colors">${applicantName}</h3>
+                            <h3 class="font-semibold text-xs md:text-sm text-neutral-300 truncate group-hover:text-orange-400 transition-colors">${applicantName}</h3>
                             ${branchAndYear}
-                            <p class="text-xs text-slate-400 mt-1">${escapeHtml(applicant.roleType)}</p>
+                            <p class="text-xs text-neutral-500 mt-1">${escapeHtml(applicant.roleType)}</p>
                         </div>
                         <div class="flex flex-col items-end ml-1">
-                            <span class="text-xs text-slate-400">${submittedDate}</span>
-                            <svg class="w-3 h-3 text-slate-300 group-hover:text-blue-500 transition-colors mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span class="text-xs text-neutral-500">${submittedDate}</span>
+                            <svg class="w-3 h-3 text-neutral-600 group-hover:text-orange-500 transition-colors mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </div>
@@ -293,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </a>`;
         }).join('');
 
-        const selectedItem = applicantListContainer.querySelector('.bg-blue-100');
+        const selectedItem = applicantListContainer.querySelector('.bg-orange-500\\/20');
         if (!selectedItem && filteredApplicants.length > 0) {
             renderApplicantDetails(filteredApplicants[0].id);
         }
@@ -306,14 +305,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentIndex = filteredApplicants.findIndex(app => app.id === applicantId);
         const applicantName = escapeHtml(applicant.fullName);
         const mobileNumber = escapeHtml(applicant.mobile);
-        const branchBadge = applicant.branch ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${escapeHtml(applicant.branch)}</span>` : '';
-        const yearBadge = applicant.year ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">${escapeHtml(applicant.year)}</span>` : '';
+        const branchBadge = applicant.branch ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-900/50 text-blue-300">${escapeHtml(applicant.branch)}</span>` : '';
+        const yearBadge = applicant.year ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-900/50 text-green-300">${escapeHtml(applicant.year)}</span>` : '';
 
         let extraAnswersHtml = '';
         if (applicant.extra_answers && Object.keys(applicant.extra_answers).length > 0) {
             extraAnswersHtml = `
-                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-slate-200 shadow-sm">
-                    <h4 class="font-semibold text-slate-800 mb-2 text-xs md:text-sm flex items-center gap-1">
+                <div class="bg-neutral-900 rounded-xl p-3 border border-neutral-700 shadow-sm">
+                    <h4 class="font-semibold text-white mb-2 text-xs md:text-sm flex items-center gap-1">
                         Additional Questions
                     </h4>
                     <div class="space-y-8">
@@ -326,17 +325,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             const answerIsEmpty = !answer || (answerIsArray && answer.length === 0);
 
                             if (answerIsEmpty) {
-                                answerHtml = `<p class="text-slate-700 whitespace-pre-wrap leading-relaxed text-xs">No answer provided.</p>`;
+                                answerHtml = `<p class="text-neutral-300 whitespace-pre-wrap leading-relaxed text-xs">No answer provided.</p>`;
                             } else if (answerIsArray) {
-                                answerHtml = `<ul class="list-disc list-inside pl-2 text-slate-700 text-xs">${answer.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+                                answerHtml = `<ul class="list-disc list-inside pl-2 text-neutral-300 text-xs">${answer.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
                             } else {
-                                answerHtml = `<p class="text-slate-700 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(String(answer))}</p>`;
+                                answerHtml = `<p class="text-neutral-300 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(String(answer))}</p>`;
                             }
 
                             return `
                             <div class="">
-                                <p class="font-medium text-slate-800 mb-1 text-xs">${questionLabel}</p>
-                                <div class="pl-2 border-l-2 border-blue-100">
+                                <p class="font-medium text-neutral-300 mb-1 text-xs">${questionLabel}</p>
+                                <div class="pl-2 border-l-2 border-orange-900">
                                     ${answerHtml}
                                 </div>
                             </div>`;
@@ -353,28 +352,32 @@ document.addEventListener('DOMContentLoaded', function() {
             minute: '2-digit' 
         }) : 'N/A';
 
+        const applicantIdHtml = canViewSensitiveData 
+            ? `<span class="text-base font-normal text-neutral-500 ml-2">#${escapeHtml(applicant.id)}</span>`
+            : '';
+
         detailsPanel.innerHTML = `
             <div class="md:px-4 space-y-4">
-                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-slate-200 shadow-sm">
+                <div class="bg-neutral-900 rounded-xl p-3 border border-neutral-700 shadow-sm">
                     <div class="flex items-start justify-between mb-2">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900 mb-1">${applicantName}</h2>
+                            <h2 class="text-xl font-bold text-white mb-1 flex items-baseline">${applicantName}${applicantIdHtml}</h2>
                             <div class="flex flex-wrap gap-1 mb-2">
                                 ${branchBadge}
                                 ${yearBadge}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">${escapeHtml(applicant.roleType)}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-900/50 text-purple-300">${escapeHtml(applicant.roleType)}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-between gap-2 text-xs text-slate-600">
+                    <div class="flex justify-between gap-2 text-xs text-neutral-400">
                         <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3 h-3 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
                             <span class="font-medium">${mobileNumber}</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3 h-3 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m4 0V9a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2m-5 5v4"></path>
                             </svg>
                             <span>Submitted: ${submittedDate}</span>
@@ -383,21 +386,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-slate-200 shadow-sm">
-                        <h4 class="font-semibold text-slate-800 mb-2 text-xs md:text-sm flex items-center gap-1">
+                    <div class="bg-neutral-900 rounded-xl p-3 border border-neutral-700 shadow-sm">
+                        <h4 class="font-semibold text-white mb-2 text-xs md:text-sm flex items-center gap-1">
                             Why do you want to apply?
                         </h4>
                         <div class="">
-                            <p class="text-slate-700 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(applicant.whyApply || 'No answer provided.')}</p>
+                            <p class="text-neutral-300 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(applicant.whyApply || 'No answer provided.')}</p>
                         </div>
                     </div>
 
-                    <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-slate-200 shadow-sm">
-                        <h4 class="font-semibold text-slate-800 mb-2 text-xs md:text-sm flex items-center gap-1">
+                    <div class="bg-neutral-900 rounded-xl p-3 border border-neutral-700 shadow-sm">
+                        <h4 class="font-semibold text-white mb-2 text-xs md:text-sm flex items-center gap-1">
                             Previous Experience
                         </h4>
                         <div class="">
-                            <p class="text-slate-700 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(applicant.experience || 'No answer provided.')}</p>
+                            <p class="text-neutral-300 whitespace-pre-wrap leading-relaxed text-xs">${escapeHtml(applicant.experience || 'No answer provided.')}</p>
                         </div>
                     </div>
 
@@ -405,12 +408,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             <div class="flex justify-between items-center mt-6 px-4 pb-4 md:px-4 md:pb-0">
-                <button id="prev-applicant" class="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed" ${currentIndex === 0 ? 'disabled' : ''}>
+                <button id="prev-applicant" class="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-neutral-300 bg-neutral-800 border border-neutral-700 rounded-lg hover:bg-neutral-700 transition disabled:opacity-50 disabled:cursor-not-allowed" ${currentIndex === 0 ? 'disabled' : ''}>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     Previous
                 </button>
-                <span class="text-xs md:text-sm text-slate-500">${currentIndex + 1} of ${filteredApplicants.length}</span>
-                <button id="next-applicant" class="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed" ${currentIndex >= filteredApplicants.length - 1 ? 'disabled' : ''}>
+                <span class="text-xs md:text-sm text-neutral-500">${currentIndex + 1} of ${filteredApplicants.length}</span>
+                <button id="next-applicant" class="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-neutral-300 bg-neutral-800 border border-neutral-700 rounded-lg hover:bg-neutral-700 transition disabled:opacity-50 disabled:cursor-not-allowed" ${currentIndex >= filteredApplicants.length - 1 ? 'disabled' : ''}>
                     Next
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
@@ -419,10 +422,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         applicantListContainer.querySelectorAll('.applicant-item').forEach(el => {
             const isSelected = parseInt(el.dataset.id, 10) === applicantId;
-            el.classList.toggle('bg-blue-100/80', isSelected);
-            el.classList.toggle('border-blue-500', isSelected);
+            el.classList.toggle('bg-orange-500/20', isSelected);
+            el.classList.toggle('border-orange-500', isSelected);
             el.classList.toggle('border-transparent', !isSelected);
-            el.classList.toggle('backdrop-blur-sm', isSelected);
         });
         
         detailsPanel.scrollTo({ top: 0, behavior: 'smooth' });
@@ -455,8 +457,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.length === 0) {
                 applicantListContainer.innerHTML = `
-                    <div class="p-6 text-center text-slate-500 space-y-3">
-                        <svg class="w-12 h-12 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-6 text-center text-neutral-500 space-y-3">
+                        <svg class="w-12 h-12 mx-auto text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <p class="font-medium">No applications found</p>
@@ -465,11 +467,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 detailsPanel.innerHTML = `
                     <div class="flex items-center justify-center h-full text-center p-8">
                         <div class="space-y-4">
-                            <svg class="w-16 h-16 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-16 h-16 mx-auto text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            <p class="text-slate-600 text-base font-medium">No applications to display</p>
-                            <p class="text-slate-500 text-xs md:text-sm">Applications will appear here once submitted</p>
+                            <p class="text-neutral-400 text-base font-medium">No applications to display</p>
+                            <p class="text-neutral-500 text-xs md:text-sm">Applications will appear here once submitted</p>
                         </div>
                     </div>`;
                 return;
@@ -478,15 +480,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Failed to fetch recruitment data:', error);
             const errorHtml = `
-                <div class="flex items-center justify-center h-full text-center p-8 text-red-600">
+                <div class="flex items-center justify-center h-full text-center text-red-400">
                     <div class="space-y-4">
-                        <svg class="w-16 h-16 mx-auto text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-16 h-16 mx-auto text-red-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <div>
-                            <p class="text-base font-semibold text-red-600">Failed to load data</p>
+                            <p class="text-base font-semibold text-red-400">Failed to load data</p>
                             <p class="text-xs md:text-sm text-red-500 mt-1">${escapeHtml(error.message)}</p>
-                            <button onclick="location.reload()" class="mt-3 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs md:text-sm font-medium transition-colors">
+                            <button onclick="location.reload()" class="mt-3 px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-300 rounded-lg text-xs md:text-sm font-medium transition-colors">
                                 Try Again
                             </button>
                         </div>
@@ -529,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!prevButton && !nextButton) return;
 
-        const currentSelected = applicantListContainer.querySelector('.bg-blue-100\\/80');
+        const currentSelected = applicantListContainer.querySelector('.bg-orange-500\\/20');
         if (!currentSelected) return;
 
         const currentId = parseInt(currentSelected.dataset.id, 10);
@@ -570,10 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateAndRenderStats() {
         if (allApplicants.length === 0) {
             statsTotalResponses.textContent = '0';
-            timelineChartContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
-            branchStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
-            yearStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
-            positionStatsContainer.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            timelineChartContainer.innerHTML = '<p class="text-sm text-neutral-500">No data available.</p>';
+            branchStatsContainer.innerHTML = '<p class="text-sm text-neutral-500">No data available.</p>';
+            yearStatsContainer.innerHTML = '<p class="text-sm text-neutral-500">No data available.</p>';
+            positionStatsContainer.innerHTML = '<p class="text-sm text-neutral-500">No data available.</p>';
             return;
         }
 
@@ -598,13 +600,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        const branchColors = ['bg-blue-500', 'bg-teal-500', 'bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-purple-500', 'bg-rose-500'];
-        const yearColors = ['bg-green-500', 'bg-yellow-500', 'bg-orange-500', 'bg-red-500'];
-        const positionColors = ['bg-cyan-500', 'bg-fuchsia-500', 'bg-lime-500', 'bg-pink-500', 'bg-amber-500', 'bg-violet-500'];
+        const statColors = ['bg-orange-500', 'bg-orange-600', 'bg-orange-400', 'bg-orange-700', 'bg-orange-300', 'bg-orange-800'];
 
-        renderBreakdownChart(branchStatsContainer, branchCounts, total, branchColors);
-        renderBreakdownChart(yearStatsContainer, yearCounts, total, yearColors);
-        renderBreakdownChart(positionStatsContainer, positionCounts, total, positionColors);
+        renderBreakdownChart(branchStatsContainer, branchCounts, total, statColors);
+        renderBreakdownChart(yearStatsContainer, yearCounts, total, statColors);
+        renderBreakdownChart(positionStatsContainer, positionCounts, total, statColors);
         
         const timelineStats = renderTimelineChart(timelineChartContainer, dailyCounts);
 
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortedData = Object.entries(data).sort(([, a], [, b]) => b - a);
         
         if (sortedData.length === 0) {
-            container.innerHTML = '<p class="text-sm text-slate-500">No data available.</p>';
+            container.innerHTML = '<p class="text-sm text-neutral-500">No data available.</p>';
             return;
         }
 
@@ -627,10 +627,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return `
                 <div>
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-medium text-slate-600">${escapeHtml(label)}</span>
-                        <span class="text-sm font-bold text-slate-800">${count}</span>
+                        <span class="text-sm font-medium text-neutral-300">${escapeHtml(label)}</span>
+                        <span class="text-sm font-bold text-white">${count}</span>
                     </div>
-                    <div class="w-full bg-slate-200 rounded-full h-2.5">
+                    <div class="w-full bg-neutral-700 rounded-full h-2.5">
                         <div class="${color} h-2.5 rounded-full" style="width: ${percentage}%" title="${percentage}%"></div>
                     </div>
                 </div>
@@ -642,12 +642,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortedDates = Object.keys(dailyData).sort((a, b) => new Date(a) - new Date(b));
 
         if (sortedDates.length === 0) {
-            container.innerHTML = '<p class="text-sm text-slate-500 text-center w-full py-10">No submission date data available.</p>';
+            container.innerHTML = '<p class="text-sm text-neutral-500 text-center w-full py-10">No submission date data available.</p>';
             return { firstDay: null, peakDay: null, peakCount: 0 };
         }
 
         if (sortedDates.length === 1) {
-            container.innerHTML = '<p class="text-sm text-slate-500 text-center w-full py-10">Not enough data for a timeline chart (requires at least 2 days with submissions).</p>';
+            container.innerHTML = '<p class="text-sm text-neutral-500 text-center w-full py-10">Not enough data for a timeline chart (requires at least 2 days with submissions).</p>';
             const date = sortedDates[0];
             return { firstDay: date, peakDay: date, peakCount: dailyData[date] };
         }
@@ -679,16 +679,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const labels = points.map((p, i) => {
             const x = getX(i);
             const formattedDate = new Date(p.date + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
-            return `<text x="${x}" y="${svgHeight - margin.bottom + 15}" class="text-xs fill-slate-500" text-anchor="middle">${formattedDate}</text>`;
+            return `<text x="${x}" y="${svgHeight - margin.bottom + 15}" class="text-xs fill-neutral-400" text-anchor="middle">${formattedDate}</text>`;
         }).join('');
 
         const dataCircles = points.map((p, i) => {
             const x = getX(i);
             const y = getY(p.count);
             return `<g class="group" transform="translate(${x}, ${y})">
-                <circle cx="0" cy="0" r="6" class="fill-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <circle cx="0" cy="0" r="4" class="fill-white stroke-2 stroke-blue-500" />
-                <text x="0" y="-10" text-anchor="middle" class="text-xs font-bold fill-slate-700 opacity-0 group-hover:opacity-100 transition-opacity">${p.count}</text>
+                <circle cx="0" cy="0" r="6" class="fill-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <circle cx="0" cy="0" r="4" class="fill-neutral-900 stroke-2 stroke-orange-500" />
+                <text x="0" y="-10" text-anchor="middle" class="text-xs font-bold fill-white opacity-0 group-hover:opacity-100 transition-opacity">${p.count}</text>
             </g>`;
         }).join('');
 
@@ -700,8 +700,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (value > peakCount) continue;
                 const y = getY(value);
                 yAxisLabels.push(`<g transform="translate(0, ${y})">
-                    <line x1="${margin.left}" x2="${svgWidth - margin.right}" y1="0" y2="0" class="stroke-slate-200" stroke-dasharray="2,2"></line>
-                    <text x="${margin.left - 8}" y="4" class="text-xs fill-slate-500" text-anchor="end">${value}</text>
+                    <line x1="${margin.left}" x2="${svgWidth - margin.right}" y1="0" y2="0" class="stroke-neutral-700" stroke-dasharray="2,2"></line>
+                    <text x="${margin.left - 8}" y="4" class="text-xs fill-neutral-400" text-anchor="end">${value}</text>
                 </g>`);
             }
         }
@@ -710,8 +710,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full max-h-fit" preserveAspectRatio="xMinYMin meet">
                 <defs>
                     <linearGradient id="area-gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
-                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                        <stop offset="0%" stop-color="#f97316" stop-opacity="0.2"/>
+                        <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
                     </linearGradient>
                 </defs>
                 <g class="y-axis-grid">
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${labels}
                 </g>
                 <polygon points="${areaPoints}" fill="url(#area-gradient)" />
-                <polyline points="${pathPoints}" fill="none" stroke="#3b82f6" stroke-width="2" />
+                <polyline points="${pathPoints}" fill="none" stroke="#f97316" stroke-width="2" />
                 <g class="data-points">
                     ${dataCircles}
                 </g>
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            const currentSelected = applicantListContainer.querySelector('.bg-blue-100\\/80');
+            const currentSelected = applicantListContainer.querySelector('.bg-orange-500\\/20');
             if (!currentSelected) return;
             
             const allItems = applicantListContainer.querySelectorAll('.applicant-item');
