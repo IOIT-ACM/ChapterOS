@@ -40,19 +40,40 @@
   </head>
   <body class="h-full bg-black text-neutral-300 font-mono flex flex-col min-h-screen">
     
+    {% if messages %}
+        <div id="django-message-container" class="fixed top-24 right-6 z-[100] space-y-3 w-full max-w-sm">
+        {% for message in messages %}
+            <div class="django-message p-4 rounded-md border shadow-lg {% if message.tags == 'success' %}bg-green-900/50 text-green-300 border-green-700{% elif message.tags == 'error' %}bg-red-900/50 text-red-300 border-red-700{% else %}bg-blue-900/50 text-blue-300 border-blue-700{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+
     {% include "global/header.html" %}
 
     <main class="flex-1 flex flex-col">
-        {% if messages %}
-            <div class="mb-6 space-y-3 p-4">
-            {% for message in messages %}
-                <div class="p-4 rounded-md border {% if message.tags == 'success' %}bg-green-900/50 text-green-300 border-green-700{% elif message.tags == 'error' %}bg-red-900/50 text-red-300 border-red-700{% else %}bg-blue-900/50 text-blue-300 border-blue-700{% endif %}" role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
-            </div>
-        {% endif %}
         {% block content %} {% endblock %}
     </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageContainer = document.getElementById('django-message-container');
+        if (messageContainer) {
+            setTimeout(() => {
+                const messages = messageContainer.querySelectorAll('.django-message');
+                messages.forEach(message => {
+                    message.classList.add('fade-out');
+                    message.addEventListener('transitionend', () => {
+                        message.remove();
+                        if (messageContainer.children.length === 0) {
+                            messageContainer.remove();
+                        }
+                    });
+                });
+            }, 5000);
+        }
+    });
+    </script>
   </body>
 </html>
