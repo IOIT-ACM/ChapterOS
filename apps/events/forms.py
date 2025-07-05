@@ -6,9 +6,8 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             'title', 'description', 'start_date', 'end_date', 
-            'start_time', 'end_time', 'location', 'is_all_day', 
-            'category', 'status', 'registration_required', 'max_participants',
-            'is_recurring', 'privacy'
+            'start_time', 'end_time', 'location', 'category', 
+            'status', 'privacy'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-neutral-600 appearance-none focus:outline-none focus:ring-0 focus:border-orange-500 peer', 'placeholder': ' '}),
@@ -21,7 +20,6 @@ class EventForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-neutral-600 appearance-none focus:outline-none focus:ring-0 focus:border-orange-500'}),
             'status': forms.Select(attrs={'class': 'block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-neutral-600 appearance-none focus:outline-none focus:ring-0 focus:border-orange-500'}),
             'privacy': forms.Select(attrs={'class': 'block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-neutral-600 appearance-none focus:outline-none focus:ring-0 focus:border-orange-500'}),
-            'max_participants': forms.NumberInput(attrs={'class': 'block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-neutral-600 appearance-none focus:outline-none focus:ring-0 focus:border-orange-500 peer', 'placeholder': ' '}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -31,4 +29,3 @@ class EventForm(forms.ModelForm):
         self.fields['end_date'].required = False
         self.fields['start_time'].required = False
         self.fields['end_time'].required = False
-        self.fields['max_participants'].required = False

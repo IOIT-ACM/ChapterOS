@@ -56,18 +56,19 @@ def api_events(request):
     except (ValueError, TypeError):
         base_date = date.today()
 
-    if view_type == 'month':
-        start_date = base_date.replace(day=1)
-        last_day = (start_date.replace(month=start_date.month % 12 + 1, day=1) - timedelta(days=1))
-        end_date = last_day
-    elif view_type == 'week':
-        start_date = base_date - timedelta(days=base_date.weekday()) # Monday
-        end_date = start_date + timedelta(days=6) # Sunday
-    elif view_type == 'day':
-        start_date = end_date = base_date
-    else: # Fallback for Agenda/Year for now
+    if view_type == 'day':
         start_date = base_date
-        end_date = base_date + timedelta(days=30)
+        end_date = base_date
+    elif view_type == 'week':
+        start_date = base_date - timedelta(days=base_date.isoweekday() % 7)
+        end_date = start_date + timedelta(days=6)
+    elif view_type == 'year':
+        start_date = date(base_date.year, 1, 1)
+        end_date = date(base_date.year, 12, 31)
+    else:
+        start_of_month = base_date.replace(day=1)
+        start_date = start_of_month - timedelta(days=start_of_month.isoweekday() % 7)
+        end_date = start_date + timedelta(days=41)
 
     queryset = Event.objects.select_related('category', 'created_by').filter(
         Q(start_date__lte=end_date, end_date__gte=start_date) |
@@ -87,7 +88,6 @@ def api_events(request):
             'end_date': event.end_date.isoformat() if event.end_date else None,
             'start_time': event.start_time.strftime('%H:%M') if event.start_time else None,
             'end_time': event.end_time.strftime('%H:%M') if event.end_time else None,
-            'is_all_day': event.is_all_day,
             'location': event.location,
             'status': event.status,
             'get_status_display': event.get_status_display(),

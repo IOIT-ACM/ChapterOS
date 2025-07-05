@@ -41,11 +41,6 @@
                 </div>
             </div>
 
-            <div class="flex items-center pt-2 space-x-6">
-                <label class="flex items-center"><input id="id_is_all_day" type="checkbox" name="is_all_day" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500"> <span class="ms-2 text-sm font-medium text-neutral-300">All-day event</span></label>
-                <label class="flex items-center"><input id="id_is_recurring" type="checkbox" name="is_recurring" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500"> <span class="ms-2 text-sm font-medium text-neutral-300">Recurring</span></label>
-            </div>
-
             <div class="relative z-0 w-full group">
                 {{ form.location }}
                 <label for="id_location" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
@@ -67,16 +62,6 @@
                     <label for="id_privacy" class="block mb-2 text-sm font-medium text-neutral-400">Privacy</label>
                     {{ form.privacy }}
                 </div>
-            </div>
-
-            <div class="flex items-center pt-2">
-                <input id="id_registration_required" type="checkbox" name="registration_required" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
-                <label for="id_registration_required" class="ms-2 text-sm font-medium text-neutral-300">Registration Required</label>
-            </div>
-
-            <div id="max-participants-wrapper" class="relative z-0 w-full group hidden">
-                {{ form.max_participants }}
-                <label for="id_max_participants" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Max Participants</label>
             </div>
 
             <div class="pt-4 flex justify-end items-center flex-shrink-0">

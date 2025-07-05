@@ -18,7 +18,7 @@
                     <span class="material-symbols-outlined text-orange-400 mt-1">calendar_month</span>
                     <div>
                         <h2 class="font-semibold text-white">Date</h2>
-                        <p>{{ event.start_date|date:"l, F j, Y" }}{% if event.end_date and event.end_date != event.start_date %} - {{ event.end_date|date:"l, F j, Y" }}{% endif %}</p>
+                        <p>{{ event.start_date|date:"l, F j, Y" }}{% if event.end_date and event.end_date != event.start_date %} to {{ event.end_date|date:"l, F j, Y" }}{% endif %}</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
@@ -26,10 +26,10 @@
                     <div>
                         <h2 class="font-semibold text-white">Time</h2>
                         <p>
-                            {% if event.is_all_day %}
-                                All Day
+                            {% if event.start_time %}
+                                From {{ event.start_time|time:"g:i A" }}{% if event.end_time %} to {{ event.end_time|time:"g:i A" }}{% endif %}
                             {% else %}
-                                {{ event.start_time|time:"g:i A" }}{% if event.end_time %} - {{ event.end_time|time:"g:i A" }}{% endif %}
+                                Not specified
                             {% endif %}
                         </p>
                     </div>
@@ -61,22 +61,6 @@
             </div>
             {% endif %}
         </div>
-
-        {% if event.registration_required %}
-        <div class="bg-neutral-800/50 p-6 md:p-8 border-t border-neutral-700">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h3 class="text-xl font-bold text-white">Registration is Required</h3>
-                    {% if event.max_participants %}
-                    <p class="text-neutral-400">Limited to {{ event.max_participants }} participants.</p>
-                    {% endif %}
-                </div>
-                <button class="w-full md:w-auto px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-all duration-200 shadow-md disabled:bg-neutral-600 disabled:cursor-not-allowed" disabled>
-                    Registration Closed
-                </button>
-            </div>
-        </div>
-        {% endif %}
     </div>
 
     <div class="mt-6 text-center">

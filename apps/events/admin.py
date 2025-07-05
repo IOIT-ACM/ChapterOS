@@ -8,8 +8,8 @@ class EventCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'start_date', 'category', 'status', 'created_by', 'is_recurring')
-    list_filter = ('status', 'is_recurring', 'category', 'start_date')
+    list_display = ('title', 'start_date', 'category', 'status', 'created_by')
+    list_filter = ('status', 'category', 'start_date')
     search_fields = ('title', 'description', 'location')
     raw_id_fields = ('created_by', 'approved_by', 'parent_event')
     date_hierarchy = 'start_date'

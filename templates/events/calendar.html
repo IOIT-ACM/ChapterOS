@@ -169,13 +169,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const getEvents = async () => {
-        const cacheKey = `${state.currentView}-${toISODateString(state.currentDate).slice(0, 7)}`;
+        const cacheKey = toISODateString(state.currentDate).slice(0, 7);
         if (dataCache[cacheKey]) {
             state.events = dataCache[cacheKey];
             return;
         }
         showLoader();
-        const dataUrl = `{% url 'events:api_events' %}?view=${state.currentView}&date=${toISODateString(state.currentDate)}`;
+        const dataUrl = `{% url 'events:api_events' %}?date=${toISODateString(state.currentDate)}`;
         const eventsData = await fetchAPI(dataUrl);
         if (eventsData) {
             state.events = eventsData;
@@ -204,15 +204,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         eventsTableBody.innerHTML = filteredEvents.map(event => {
-            const date = new Date(event.start_date);
-            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const time = event.is_all_day ? 'All Day' : (event.start_time || '');
+            const startDate = new Date(event.start_date + 'T00:00:00');
+            const endDate = event.end_date ? new Date(event.end_date + 'T00:00:00') : null;
+            
+            let dateDisplay = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            if (endDate && startDate.getTime() !== endDate.getTime()) {
+                dateDisplay += ` - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            }
+
+            let timeDisplay = '';
+            if (event.start_time) {
+                timeDisplay = event.start_time;
+                if (event.end_time) {
+                    timeDisplay += ` - ${event.end_time}`;
+                }
+            }
+
             const isSelected = event.id === state.selectedEventId;
 
             return `
                 <tr class="bg-neutral-950 border-b border-neutral-800 hover:bg-neutral-800 cursor-pointer ${isSelected ? '!bg-orange-500/20' : ''}" data-event-id="${event.id}">
                     <td class="px-6 py-4 font-medium text-white whitespace-nowrap">
-                        ${formattedDate}<br><span class="text-neutral-500">${time}</span>
+                        ${dateDisplay}<br><span class="text-neutral-500">${timeDisplay}</span>
                     </td>
                     <td class="px-6 py-4">${event.title}</td>
                     <td class="px-6 py-4">
@@ -245,10 +258,24 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('event-details-title').textContent = event.title;
         document.getElementById('event-details-status').textContent = event.get_status_display;
         
-        const eventDate = new Date(event.start_date);
-        let dateTimeString = eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        if (!event.is_all_day && event.start_time) dateTimeString += ` at ${event.start_time}`;
-        document.getElementById('event-details-datetime').textContent = dateTimeString;
+        const startDate = new Date(event.start_date + 'T00:00:00');
+        const endDate = event.end_date ? new Date(event.end_date + 'T00:00:00') : null;
+
+        let datePart = startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if (endDate && startDate.getTime() !== endDate.getTime()) {
+            datePart += '<br>to<br>' + endDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        let timePart = '';
+        if (event.start_time) {
+            timePart = `from ${event.start_time}`;
+            if (event.end_time) {
+                timePart += ` to ${event.end_time}`;
+            }
+        }
+        
+        const dateTimeString = `${datePart}${timePart ? `<br><br>${timePart}` : ''}`;
+        document.getElementById('event-details-datetime').innerHTML = dateTimeString;
         document.getElementById('event-details-location').textContent = event.location || 'Not specified';
         document.getElementById('event-details-createdby').textContent = event.created_by_name;
         document.getElementById('event-details-description').innerHTML = event.description ? event.description.replace(/\n/g, '<br>') : 'No description provided.';
@@ -267,7 +294,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const firstDayOfMonth = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const today = new Date();
-        const eventDatesSet = new Set(Object.values(dataCache).flat().map(e => e.start_date));
+
+        const eventsByDate = {};
+        const allEvents = Object.values(dataCache).flat();
+        allEvents.forEach(event => {
+            const start = new Date(event.start_date + 'T00:00:00');
+            const end = event.end_date ? new Date(event.end_date + 'T00:00:00') : start;
+            let current = new Date(start);
+
+            while (current <= end) {
+                const dateKey = toISODateString(current);
+                if (!eventsByDate[dateKey]) {
+                    eventsByDate[dateKey] = [];
+                }
+                eventsByDate[dateKey].push(event);
+                current.setDate(current.getDate() + 1);
+            }
+        });
 
         for (let i = 0; i < firstDayOfMonth; i++) {
             miniCalGrid.insertAdjacentHTML('beforeend', '<span></span>');
@@ -276,14 +319,22 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let day = 1; day <= daysInMonth; day++) {
             const d = new Date(year, month, day);
             const dateKey = toISODateString(d);
-            let classes = 'p-1 rounded-full hover:bg-neutral-700 cursor-pointer';
-            let content = day;
+            let classes = 'p-1 rounded-full hover:bg-neutral-700 cursor-pointer text-white';
+            let style = '';
+            
+            if (eventsByDate[dateKey] && eventsByDate[dateKey].length > 0) {
+                const color = eventsByDate[dateKey][0].category_color;
+                style = `background-color: ${color}BF;`; // BF is ~75% opacity
+            }
 
-            if (d.toDateString() === today.toDateString()) classes += ' bg-orange-600 text-white';
-            if (toISODateString(d) === toISODateString(state.currentDate)) classes += ' ring-2 ring-orange-400';
-            if (eventDatesSet.has(dateKey)) content = `<span class="relative">${day}<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></span></span>`;
+            if (d.toDateString() === today.toDateString()) {
+                classes += ' !bg-orange-600 !text-white';
+            }
+            if (toISODateString(d) === toISODateString(state.currentDate)) {
+                classes += ' ring-2 ring-orange-400';
+            }
 
-            miniCalGrid.insertAdjacentHTML('beforeend', `<span class="${classes}" data-date="${dateKey}">${content}</span>`);
+            miniCalGrid.insertAdjacentHTML('beforeend', `<span class="${classes}" style="${style}" data-date="${dateKey}">${day}</span>`);
         }
     };
 
@@ -368,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         miniCalGrid.addEventListener('click', (e) => {
             if (e.target.dataset.date) {
-                state.currentDate = new Date(e.target.dataset.date);
+                state.currentDate = new Date(e.target.dataset.date + 'T00:00:00');
                 render();
             }
         });
