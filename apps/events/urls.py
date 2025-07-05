@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/events/', views.api_events, name='api_events'),
     path('api/categories/', views.api_event_categories, name='api_event_categories'),
     path('api/statuses/', views.api_event_statuses, name='api_event_statuses'),
+    path('api/event/<int:event_id>/history/', views.api_event_history, name='api_event_history'),
 
     # Event Actions (Modal form submissions)
     path('add/', views.add_event, name='add_event'),

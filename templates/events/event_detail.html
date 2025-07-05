@@ -63,6 +63,40 @@
         </div>
     </div>
 
+    <div class="mt-8">
+        <div class="bg-neutral-900 rounded-xl shadow-lg border border-neutral-700">
+            <div class="p-6 md:p-8">
+                <h2 class="text-xl font-semibold text-white mb-4">Event History</h2>
+                {% if history_logs %}
+                    <ul class="space-y-4">
+                        {% for log in history_logs %}
+                            <li class="flex items-start space-x-3 text-sm">
+                                <span class="material-symbols-outlined text-neutral-500 mt-0.5">history</span>
+                                <div class="flex-1">
+                                    <p class="text-neutral-300">
+                                        <span class="font-semibold text-white">{{ log.user.get_full_name|default:log.user.username|default:"System" }}</span>
+                                        {% if log.action == 'created' %}
+                                            created the event.
+                                        {% elif log.action == 'updated' %}
+                                            updated the <span class="font-semibold text-orange-400">{{ log.field_changed }}</span>
+                                            from <code class="text-red-400 bg-red-900/50 px-1 py-0.5 rounded">"{{ log.old_value }}"</code>
+                                            to <code class="text-green-400 bg-green-900/50 px-1 py-0.5 rounded">"{{ log.new_value }}"</code>.
+                                        {% else %}
+                                            performed action: {{ log.action }}.
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-neutral-500 mt-1">{{ log.timestamp|date:"F j, Y, g:i A" }}</p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-neutral-500">No history recorded for this event.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="mt-6 text-center">
         <a href="{% url 'events:calendar' %}" class="text-orange-500 hover:text-orange-400 transition-colors font-semibold inline-flex items-center gap-2">
             <span class="material-symbols-outlined">arrow_back</span>

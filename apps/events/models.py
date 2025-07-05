@@ -88,9 +88,24 @@ class EventHistory(models.Model):
     field_changed = models.CharField(max_length=100, blank=True, null=True)
     old_value = models.TextField(blank=True, null=True)
     new_value = models.TextField(blank=True, null=True)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
-    user_agent = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    # Example Log Entries:
+    # 1. Event Creation:
+    #    - event: <Event object>
+    #    - user: <User object>
+    #    - action: "created"
+    #    - field_changed: None
+    #    - old_value: None
+    #    - new_value: None
+    #
+    # 2. Field Update:
+    #    - event: <Event object>
+    #    - user: <User object>
+    #    - action: "updated"
+    #    - field_changed: "Title"
+    #    - old_value: "Old Event Title"
+    #    - new_value: "New Event Title"
 
     def __str__(self):
         return f"{self.action} on {self.event.title} by {self.user.username if self.user else 'System'}"

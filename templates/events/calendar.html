@@ -68,7 +68,7 @@
             <p class="text-sm">Select an event to view its details.</p>
         </div>
         
-        <div id="right-panel-details" class="hidden space-y-4">
+        <div id="right-panel-details" class="hidden space-y-4 h-full">
             <div>
                 <span id="event-details-category-badge" class="text-xs font-semibold px-2 py-1 rounded-full text-white">Category</span>
                 <h2 id="event-details-title" class="text-2xl font-bold text-white mt-2"></h2>
@@ -108,6 +108,14 @@
                 <button id="delete-event-btn" class="w-full bg-red-800/50 hover:bg-red-800/80 text-red-300 py-2 rounded-lg">Delete Event</button>
             </div>
             {% endif %}
+            
+            <div class="border-t border-neutral-800 pt-6">
+                <h4 class="font-semibold text-white my-3">History</h4>
+                <div id="event-details-history" class="space-y-3 text-xs pr-2">
+                    <p class="text-neutral-500">Loading history...</p>
+                </div>
+            </div>
+
         </div>
     </aside>
 </div>
@@ -128,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         miniCalDate: new Date(),
     };
     const dataCache = {};
+    const historyCache = {};
 
     const mainHeaderDate = document.getElementById('main-header-date');
     const viewOptionsPanel = document.getElementById('view-options-panel');
@@ -160,11 +169,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
-            return response.json();
+            return { data: await response.json(), error: null };
         } catch (error) {
             console.error(`Failed to fetch from ${url}:`, error);
-            eventsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-red-400 text-center">${error.message}</td></tr>`;
-            return null;
+            return { data: null, error: error.message };
         }
     };
 
@@ -176,10 +184,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         showLoader();
         const dataUrl = `{% url 'events:api_events' %}?date=${toISODateString(state.currentDate)}`;
-        const eventsData = await fetchAPI(dataUrl);
-        if (eventsData) {
-            state.events = eventsData;
-            dataCache[cacheKey] = eventsData;
+        const { data, error } = await fetchAPI(dataUrl);
+        if (data) {
+            state.events = data;
+            dataCache[cacheKey] = data;
+        } else {
+            eventsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-red-400 text-center">${error}</td></tr>`;
+            state.events = [];
         }
     };
 
@@ -189,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderEventsTable();
         renderMiniCalendar();
         if (state.selectedEventId) {
-            renderEventDetails(state.selectedEventId);
+            await renderEventDetails(state.selectedEventId);
         }
     };
 
@@ -239,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     };
 
-    const renderEventDetails = (eventId) => {
+    const renderEventDetails = async (eventId) => {
         const event = state.events.find(e => e.id === eventId);
         if (!event) {
             rightPanelEmpty.classList.remove('hidden');
@@ -282,6 +293,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
         rightPanelEmpty.classList.add('hidden');
         rightPanelDetails.classList.remove('hidden');
+
+        const historyContainer = document.getElementById('event-details-history');
+        
+        const renderHistoryHTML = (historyData, error) => {
+            if (error) {
+                historyContainer.innerHTML = `<p class="text-red-400">${error}</p>`;
+                return;
+            }
+            if (historyData && historyData.length > 0) {
+                historyContainer.innerHTML = historyData.map(log => {
+                    let logText;
+                    if (log.action === 'created') {
+                        logText = `created the event.`;
+                    } else if (log.action === 'updated') {
+                        logText = `updated <strong class="font-semibold text-orange-400">${log.field_changed}</strong> from <code class="text-red-400 bg-red-900/50 px-1 rounded">"${log.old_value}"</code> to <code class="text-green-400 bg-green-900/50 px-1 rounded">"${log.new_value}"</code>.`;
+                    } else {
+                        logText = `performed action: ${log.action}.`;
+                    }
+                    return `
+                        <div class="flex items-start space-x-2">
+                            <span class="material-symbols-outlined text-neutral-500 text-sm mt-0.5">history</span>
+                            <div class="flex-1">
+                                <p class="text-neutral-300">
+                                    <strong class="font-semibold text-white">${log.user}</strong> ${logText}
+                                </p>
+                                <p class="text-neutral-500 text-xs mt-0.5">${log.timestamp}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                historyContainer.innerHTML = '<p class="text-neutral-500">No history found.</p>';
+            }
+        };
+
+        if (historyCache[eventId]) {
+            renderHistoryHTML(historyCache[eventId].data, historyCache[eventId].error);
+            return;
+        }
+
+        historyContainer.innerHTML = '<p class="text-neutral-500">Loading history...</p>';
+        const historyUrl = `/events/api/event/${eventId}/history/`;
+        const { data: historyData, error } = await fetchAPI(historyUrl);
+        
+        historyCache[eventId] = { data: historyData, error: error };
+        renderHistoryHTML(historyData, error);
     };
 
     const renderMiniCalendar = () => {
@@ -307,7 +364,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!eventsByDate[dateKey]) {
                     eventsByDate[dateKey] = [];
                 }
-                eventsByDate[dateKey].push(event);
+                if (!eventsByDate[dateKey].find(e => e.id === event.id)) {
+                    eventsByDate[dateKey].push(event);
+                }
                 current.setDate(current.getDate() + 1);
             }
         });
@@ -324,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (eventsByDate[dateKey] && eventsByDate[dateKey].length > 0) {
                 const color = eventsByDate[dateKey][0].category_color;
-                style = `background-color: ${color}BF;`; // BF is ~75% opacity
+                style = `background-color: ${color}BF;`;
             }
 
             if (d.toDateString() === today.toDateString()) {
@@ -424,15 +483,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        document.getElementById('mini-calendar-prev').addEventListener('click', () => {
-            state.miniCalDate.setMonth(state.miniCalDate.getMonth() - 1);
+        const navigateMiniCalendar = async (direction) => {
+            state.miniCalDate.setMonth(state.miniCalDate.getMonth() + direction);
+            const cacheKey = toISODateString(state.miniCalDate).slice(0, 7);
+            if (!dataCache[cacheKey]) {
+                miniCalMonthYear.textContent = 'Loading...';
+                const dataUrl = `{% url 'events:api_events' %}?date=${toISODateString(state.miniCalDate)}`;
+                const { data } = await fetchAPI(dataUrl);
+                if (data) {
+                    dataCache[cacheKey] = data;
+                }
+            }
             renderMiniCalendar();
-        });
+        };
 
-        document.getElementById('mini-calendar-next').addEventListener('click', () => {
-            state.miniCalDate.setMonth(state.miniCalDate.getMonth() + 1);
-            renderMiniCalendar();
-        });
+        document.getElementById('mini-calendar-prev').addEventListener('click', () => navigateMiniCalendar(-1));
+        document.getElementById('mini-calendar-next').addEventListener('click', () => navigateMiniCalendar(1));
 
         if (IS_EDITOR) {
             document.getElementById('sidebar-create-event-btn').addEventListener('click', () => openModal({ start_date: toISODateString(new Date()) }));
@@ -451,8 +517,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const init = async () => {
         setupEventListeners();
-        const statuses = await fetchAPI("{% url 'events:api_event_statuses' %}");
-        if (statuses) {
+        const statusesResult = await fetchAPI("{% url 'events:api_event_statuses' %}");
+        if (statusesResult.data) {
+            const statuses = statusesResult.data;
             state.statusFilters = statuses.map(s => s[0]);
             statusFilterPanel.innerHTML = statuses.map(([value, name]) => `
                 <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer">
