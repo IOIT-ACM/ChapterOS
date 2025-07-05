@@ -52,11 +52,9 @@
 
     {% include "global/header.html" %}
 
-    <main class="flex-1 container mx-auto p-6">
+    <main class="flex-1 flex flex-col">
         {% block content %} {% endblock %}
     </main>
-
-    {% include "global/footer.html" %}
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -8,6 +8,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="landing.html"), name="landing_page"),
     path("recruitments/", include("apps.recruitments.urls")),
     path("form_builder/", include("apps.form_builder.urls")),
+    path("events/", include("apps.events.urls")),
 ]
 
 handler400 = 'ChapterOS.views.handler400'
