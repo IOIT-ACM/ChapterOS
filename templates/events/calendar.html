@@ -1,0 +1,419 @@
+{% extends "events/base.html" %}
+
+{% block title %}Events Calendar - ChapterOS{% endblock %}
+
+{% block content %}
+<div class="flex h-full w-full bg-neutral-900 flex-1">
+    <aside class="w-[280px] flex-shrink-0 bg-neutral-950 border-r border-neutral-800 flex flex-col p-4 space-y-6 overflow-y-auto">
+        {% include "events/mini_calendar.html" %}
+
+        <div class="space-y-2">
+            <h3 class="font-semibold text-white">View Options</h3>
+            <div id="view-options-panel" class="space-y-1 text-sm">
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="month" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500" checked><span>Month View</span></label>
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="week" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500"><span>Week View</span></label>
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="day" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500"><span>Day View</span></label>
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="year" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500"><span>Year View</span></label>
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="agenda" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500"><span>Agenda View</span></label>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-semibold text-white">Event Status Filter</h3>
+            <div id="status-filter-panel" class="space-y-1 text-sm">
+            </div>
+        </div>
+
+        <div class="space-y-3 !mt-auto pt-4 border-t border-neutral-800">
+            <button id="today-btn" class="w-full text-center bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold py-2.5 rounded-lg transition-colors">
+                Today
+            </button>
+            {% if is_editor %}
+            <button id="sidebar-create-event-btn" class="w-full flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">add</span>
+                <span>Create New Event</span>
+            </button>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main class="flex-1 bg-black flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-4 border-b border-neutral-800">
+            <h2 id="main-header-date" class="text-xl font-bold text-white"></h2>
+            <div class="flex items-center space-x-1">
+                <button id="main-prev-btn" class="p-2 rounded-full hover:bg-neutral-800"><span class="material-symbols-outlined">chevron_left</span></button>
+                <button id="main-next-btn" class="p-2 rounded-full hover:bg-neutral-800"><span class="material-symbols-outlined">chevron_right</span></button>
+            </div>
+        </div>
+        <div id="calendar-view-container" class="flex-1 overflow-y-auto">
+            <table class="w-full text-sm text-left text-neutral-400">
+                <thead class="text-xs text-neutral-300 uppercase bg-neutral-900 sticky top-0">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Event</th>
+                        <th scope="col" class="px-6 py-3">Category</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="events-table-body">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <aside id="right-panel" class="w-[320px] flex-shrink-0 bg-neutral-950 border-l border-neutral-800 p-4 overflow-y-auto">
+        <div id="right-panel-empty" class="flex flex-col items-center justify-center h-full text-center text-neutral-600">
+            <span class="material-symbols-outlined text-6xl">event_note</span>
+            <h3 class="mt-4 font-semibold text-neutral-400">Event Details</h3>
+            <p class="text-sm">Select an event to view its details.</p>
+        </div>
+        
+        <div id="right-panel-details" class="hidden space-y-4">
+            <div>
+                <span id="event-details-category-badge" class="text-xs font-semibold px-2 py-1 rounded-full text-white">Category</span>
+                <h2 id="event-details-title" class="text-2xl font-bold text-white mt-2"></h2>
+                <p id="event-details-status" class="text-sm font-semibold uppercase"></p>
+            </div>
+            <div class="space-y-4 text-sm">
+                <div class="flex items-start space-x-3">
+                    <span class="material-symbols-outlined text-neutral-400 mt-0.5">schedule</span>
+                    <div>
+                        <p class="font-semibold text-white">Date & Time</p>
+                        <p id="event-details-datetime" class="text-neutral-300"></p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="material-symbols-outlined text-neutral-400 mt-0.5">location_on</span>
+                    <div>
+                        <p class="font-semibold text-white">Location</p>
+                        <p id="event-details-location" class="text-neutral-300"></p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="material-symbols-outlined text-neutral-400 mt-0.5">person</span>
+                    <div>
+                        <p class="font-semibold text-white">Created by</p>
+                        <p id="event-details-createdby" class="text-neutral-300"></p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <p class="font-semibold text-white text-sm mb-1">Description</p>
+                <div id="event-details-description" class="text-sm text-neutral-400 max-h-48 overflow-y-auto bg-neutral-900 p-2 rounded-md border border-neutral-800"></div>
+            </div>
+            {% if is_editor %}
+            <div class="border-t border-neutral-800 pt-4 space-y-2">
+                <button id="edit-event-btn" class="w-full flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg">Edit Event</button>
+                <button id="duplicate-event-btn" class="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 py-2 rounded-lg">Duplicate Event</button>
+                <button id="delete-event-btn" class="w-full bg-red-800/50 hover:bg-red-800/80 text-red-300 py-2 rounded-lg">Delete Event</button>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+</div>
+
+{% include "events/event_modal.html" %}
+{{ is_editor|json_script:"is-editor-data" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const IS_EDITOR = JSON.parse(document.getElementById('is-editor-data').textContent);
+
+    let state = {
+        currentDate: new Date(),
+        currentView: 'month',
+        events: [],
+        selectedEventId: null,
+        statusFilters: [],
+        miniCalDate: new Date(),
+    };
+    const dataCache = {};
+
+    const mainHeaderDate = document.getElementById('main-header-date');
+    const viewOptionsPanel = document.getElementById('view-options-panel');
+    const statusFilterPanel = document.getElementById('status-filter-panel');
+    const eventsTableBody = document.getElementById('events-table-body');
+    const rightPanelEmpty = document.getElementById('right-panel-empty');
+    const rightPanelDetails = document.getElementById('right-panel-details');
+    const modal = document.getElementById('event-modal');
+    const modalContent = document.getElementById('event-modal-content');
+    const eventForm = document.getElementById('event-form');
+    const modalTitle = document.getElementById('modal-title');
+    const miniCalMonthYear = document.getElementById('mini-calendar-month-year');
+    const miniCalGrid = document.getElementById('mini-calendar-grid');
+
+    const toISODateString = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const showLoader = () => {
+        eventsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div></td></tr>`;
+    };
+
+    const fetchAPI = async (url) => {
+        try {
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        } catch (error) {
+            console.error(`Failed to fetch from ${url}:`, error);
+            eventsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-red-400 text-center">${error.message}</td></tr>`;
+            return null;
+        }
+    };
+
+    const getEvents = async () => {
+        const cacheKey = `${state.currentView}-${toISODateString(state.currentDate).slice(0, 7)}`;
+        if (dataCache[cacheKey]) {
+            state.events = dataCache[cacheKey];
+            return;
+        }
+        showLoader();
+        const dataUrl = `{% url 'events:api_events' %}?view=${state.currentView}&date=${toISODateString(state.currentDate)}`;
+        const eventsData = await fetchAPI(dataUrl);
+        if (eventsData) {
+            state.events = eventsData;
+            dataCache[cacheKey] = eventsData;
+        }
+    };
+
+    const render = async () => {
+        await getEvents();
+        updateMainHeader();
+        renderEventsTable();
+        renderMiniCalendar();
+        if (state.selectedEventId) {
+            renderEventDetails(state.selectedEventId);
+        }
+    };
+
+    const renderEventsTable = () => {
+        const filteredEvents = state.events.filter(event => 
+            state.statusFilters.length === 0 || state.statusFilters.includes(event.status)
+        );
+        
+        if (filteredEvents.length === 0) {
+            eventsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-neutral-500">No events found for this period.</td></tr>`;
+            return;
+        }
+
+        eventsTableBody.innerHTML = filteredEvents.map(event => {
+            const date = new Date(event.start_date);
+            const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const time = event.is_all_day ? 'All Day' : (event.start_time || '');
+            const isSelected = event.id === state.selectedEventId;
+
+            return `
+                <tr class="bg-neutral-950 border-b border-neutral-800 hover:bg-neutral-800 cursor-pointer ${isSelected ? '!bg-orange-500/20' : ''}" data-event-id="${event.id}">
+                    <td class="px-6 py-4 font-medium text-white whitespace-nowrap">
+                        ${formattedDate}<br><span class="text-neutral-500">${time}</span>
+                    </td>
+                    <td class="px-6 py-4">${event.title}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: ${event.category_color};">${event.category_name}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-semibold">${event.get_status_display}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    };
+
+    const renderEventDetails = (eventId) => {
+        const event = state.events.find(e => e.id === eventId);
+        if (!event) {
+            rightPanelEmpty.classList.remove('hidden');
+            rightPanelDetails.classList.add('hidden');
+            state.selectedEventId = null;
+            return;
+        }
+
+        state.selectedEventId = eventId;
+        document.querySelectorAll('#events-table-body tr').forEach(tr => {
+            tr.classList.toggle('!bg-orange-500/20', parseInt(tr.dataset.eventId) === eventId);
+        });
+
+        document.getElementById('event-details-category-badge').textContent = event.category_name;
+        document.getElementById('event-details-category-badge').style.backgroundColor = event.category_color;
+        document.getElementById('event-details-title').textContent = event.title;
+        document.getElementById('event-details-status').textContent = event.get_status_display;
+        
+        const eventDate = new Date(event.start_date);
+        let dateTimeString = eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if (!event.is_all_day && event.start_time) dateTimeString += ` at ${event.start_time}`;
+        document.getElementById('event-details-datetime').textContent = dateTimeString;
+        document.getElementById('event-details-location').textContent = event.location || 'Not specified';
+        document.getElementById('event-details-createdby').textContent = event.created_by_name;
+        document.getElementById('event-details-description').innerHTML = event.description ? event.description.replace(/\n/g, '<br>') : 'No description provided.';
+
+        rightPanelEmpty.classList.add('hidden');
+        rightPanelDetails.classList.remove('hidden');
+    };
+
+    const renderMiniCalendar = () => {
+        const date = new Date(state.miniCalDate);
+        miniCalMonthYear.textContent = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        miniCalGrid.innerHTML = '';
+
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        const eventDatesSet = new Set(Object.values(dataCache).flat().map(e => e.start_date));
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            miniCalGrid.insertAdjacentHTML('beforeend', '<span></span>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const d = new Date(year, month, day);
+            const dateKey = toISODateString(d);
+            let classes = 'p-1 rounded-full hover:bg-neutral-700 cursor-pointer';
+            let content = day;
+
+            if (d.toDateString() === today.toDateString()) classes += ' bg-orange-600 text-white';
+            if (toISODateString(d) === toISODateString(state.currentDate)) classes += ' ring-2 ring-orange-400';
+            if (eventDatesSet.has(dateKey)) content = `<span class="relative">${day}<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></span></span>`;
+
+            miniCalGrid.insertAdjacentHTML('beforeend', `<span class="${classes}" data-date="${dateKey}">${content}</span>`);
+        }
+    };
+
+    const updateMainHeader = () => {
+        const options = { year: 'numeric' };
+        if (state.currentView === 'month' || state.currentView === 'year') options.month = 'long';
+        if (state.currentView === 'day' || state.currentView === 'week') { options.month = 'long'; options.day = 'numeric'; }
+        mainHeaderDate.textContent = state.currentDate.toLocaleString('en-US', options);
+    };
+
+    const openModal = (data = {}) => {
+        eventForm.reset();
+        if (data.id) {
+            modalTitle.textContent = 'Edit Event';
+            eventForm.action = `/events/edit/${data.id}/`;
+            Object.keys(data).forEach(key => {
+                const field = eventForm.elements[key];
+                if (field) {
+                    if (field.type === 'checkbox') field.checked = data[key];
+                    else field.value = data[key];
+                }
+            });
+        } else {
+            modalTitle.textContent = 'Create New Event';
+            eventForm.action = "{% url 'events:add_event' %}";
+            if (data.start_date) document.getElementById('id_start_date').value = data.start_date;
+        }
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    };
+
+    const closeModal = () => {
+        modal.classList.add('opacity-0');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    };
+
+    const setupEventListeners = () => {
+        viewOptionsPanel.addEventListener('change', (e) => {
+            if (e.target.name === 'view') {
+                state.currentView = e.target.value;
+                render();
+            }
+        });
+
+        statusFilterPanel.addEventListener('change', (e) => {
+            if (e.target.classList.contains('filter-status')) {
+                state.statusFilters = [...statusFilterPanel.querySelectorAll('.filter-status:checked')].map(cb => cb.value);
+                renderEventsTable();
+            }
+        });
+
+        const navigate = (direction) => {
+            const d = new Date(state.currentDate);
+            switch (state.currentView) {
+                case 'month': d.setMonth(d.getMonth() + direction); break;
+                case 'week': d.setDate(d.getDate() + 7 * direction); break;
+                case 'day': d.setDate(d.getDate() + direction); break;
+                case 'year': d.setFullYear(d.getFullYear() + direction); break;
+            }
+            state.currentDate = d;
+            render();
+        };
+
+        document.getElementById('main-prev-btn').addEventListener('click', () => navigate(-1));
+        document.getElementById('main-next-btn').addEventListener('click', () => navigate(1));
+        document.getElementById('today-btn').addEventListener('click', () => {
+            state.currentDate = new Date();
+            state.miniCalDate = new Date();
+            render();
+        });
+
+        eventsTableBody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if (row && row.dataset.eventId) {
+                renderEventDetails(parseInt(row.dataset.eventId));
+            }
+        });
+
+        miniCalGrid.addEventListener('click', (e) => {
+            if (e.target.dataset.date) {
+                state.currentDate = new Date(e.target.dataset.date);
+                render();
+            }
+        });
+
+        document.getElementById('mini-calendar-prev').addEventListener('click', () => {
+            state.miniCalDate.setMonth(state.miniCalDate.getMonth() - 1);
+            renderMiniCalendar();
+        });
+
+        document.getElementById('mini-calendar-next').addEventListener('click', () => {
+            state.miniCalDate.setMonth(state.miniCalDate.getMonth() + 1);
+            renderMiniCalendar();
+        });
+
+        if (IS_EDITOR) {
+            document.getElementById('sidebar-create-event-btn').addEventListener('click', () => openModal({ start_date: toISODateString(new Date()) }));
+            document.getElementById('edit-event-btn').addEventListener('click', () => {
+                if (state.selectedEventId) {
+                    const eventData = state.events.find(e => e.id === state.selectedEventId);
+                    openModal(eventData);
+                }
+            });
+        }
+
+        document.getElementById('close-event-modal').addEventListener('click', closeModal);
+        document.getElementById('cancel-event-modal').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => e.target === modal && closeModal());
+    };
+
+    const init = async () => {
+        setupEventListeners();
+        const statuses = await fetchAPI("{% url 'events:api_event_statuses' %}");
+        if (statuses) {
+            state.statusFilters = statuses.map(s => s[0]);
+            statusFilterPanel.innerHTML = statuses.map(([value, name]) => `
+                <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer">
+                    <input type="checkbox" value="${value}" class="filter-status text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500 rounded" checked>
+                    <span>${name}</span>
+                </label>
+            `).join('');
+        }
+        render();
+    };
+
+    init();
+});
+</script>
+{% endblock %}

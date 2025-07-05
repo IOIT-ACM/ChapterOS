@@ -1,0 +1,89 @@
+<div id="event-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
+    <div class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300 border border-neutral-700" id="event-modal-content">
+        <div class="flex justify-between items-center border-b border-neutral-700 p-4 flex-shrink-0">
+            <h3 id="modal-title" class="text-lg font-bold text-white">Add Event</h3>
+            <button id="close-event-modal" class="text-neutral-400 hover:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form id="event-form" method="post" action="" class="overflow-y-auto flex-grow p-6 space-y-6">
+            {% csrf_token %}
+            <div class="relative z-0 w-full group">
+                {{ form.title }}
+                <label for="id_title" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Event Title</label>
+            </div>
+
+            <div class="relative z-0 w-full group">
+                {{ form.description }}
+                <label for="id_description" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="relative z-0 w-full group">
+                    {{ form.start_date }}
+                    <label for="id_start_date" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">Start Date</label>
+                </div>
+                <div class="relative z-0 w-full group">
+                    {{ form.end_date }}
+                    <label for="id_end_date" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">End Date (optional)</label>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="relative z-0 w-full group">
+                    {{ form.start_time }}
+                    <label for="id_start_time" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">Start Time</label>
+                </div>
+                <div class="relative z-0 w-full group">
+                    {{ form.end_time }}
+                    <label for="id_end_time" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">End Time</label>
+                </div>
+            </div>
+
+            <div class="flex items-center pt-2 space-x-6">
+                <label class="flex items-center"><input id="id_is_all_day" type="checkbox" name="is_all_day" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500"> <span class="ms-2 text-sm font-medium text-neutral-300">All-day event</span></label>
+                <label class="flex items-center"><input id="id_is_recurring" type="checkbox" name="is_recurring" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500"> <span class="ms-2 text-sm font-medium text-neutral-300">Recurring</span></label>
+            </div>
+
+            <div class="relative z-0 w-full group">
+                {{ form.location }}
+                <label for="id_location" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_category" class="block mb-2 text-sm font-medium text-neutral-400">Category</label>
+                    {{ form.category }}
+                </div>
+                <div>
+                    <label for="id_status" class="block mb-2 text-sm font-medium text-neutral-400">Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="id_privacy" class="block mb-2 text-sm font-medium text-neutral-400">Privacy</label>
+                    {{ form.privacy }}
+                </div>
+            </div>
+
+            <div class="flex items-center pt-2">
+                <input id="id_registration_required" type="checkbox" name="registration_required" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
+                <label for="id_registration_required" class="ms-2 text-sm font-medium text-neutral-300">Registration Required</label>
+            </div>
+
+            <div id="max-participants-wrapper" class="relative z-0 w-full group hidden">
+                {{ form.max_participants }}
+                <label for="id_max_participants" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Max Participants</label>
+            </div>
+
+            <div class="pt-4 flex justify-end items-center flex-shrink-0">
+                <button type="button" id="cancel-event-modal" class="text-neutral-300 bg-transparent hover:bg-neutral-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2">Cancel</button>
+                <button type="submit" name="save_add" class="text-white bg-neutral-700 hover:bg-neutral-600 focus:ring-4 focus:outline-none focus:ring-neutral-500/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2">Save & Add Another</button>
+                <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Save Event</button>
+            </div>
+        </form>
+    </div>
+</div>

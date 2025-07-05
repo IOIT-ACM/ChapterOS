@@ -1,0 +1,15 @@
+<div id="mini-calendar-widget" class="space-y-2">
+    <div class="flex items-center justify-between">
+        <h3 id="mini-calendar-month-year" class="font-semibold text-white"></h3>
+        <div class="flex items-center space-x-1">
+            <button id="mini-calendar-prev" class="p-1 rounded-full hover:bg-neutral-700"><span class="material-symbols-outlined text-base">chevron_left</span></button>
+            <button id="mini-calendar-next" class="p-1 rounded-full hover:bg-neutral-700"><span class="material-symbols-outlined text-base">chevron_right</span></button>
+        </div>
+    </div>
+    <div class="grid grid-cols-7 text-center text-xs text-neutral-400">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+    </div>
+    <div id="mini-calendar-grid" class="grid grid-cols-7 text-center text-sm gap-y-1">
+        <!-- Dates will be rendered here by JS -->
+    </div>
+</div>
