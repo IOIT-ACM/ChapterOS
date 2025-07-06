@@ -29,3 +29,15 @@ class EventForm(forms.ModelForm):
         self.fields['end_date'].required = False
         self.fields['start_time'].required = False
         self.fields['end_time'].required = False
+
+class BulkUploadForm(forms.Form):
+    csv_file = forms.FileField(
+        label='Select a CSV file',
+        widget=forms.FileInput(attrs={'class': 'block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-600 file:text-white hover:file:bg-orange-700 cursor-pointer', 'accept': '.csv'})
+    )
+
+    def clean_csv_file(self):
+        file = self.cleaned_data['csv_file']
+        if not file.name.endswith('.csv'):
+            raise forms.ValidationError("File is not a CSV type")
+        return file

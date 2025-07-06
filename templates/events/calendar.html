@@ -33,6 +33,10 @@
                 <span class="material-symbols-outlined">add</span>
                 <span>Create New Event</span>
             </button>
+            <a href="{% url 'events:bulk_upload' %}" class="w-full flex items-center justify-center space-x-2 bg-neutral-700 hover:bg-neutral-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm">
+                <span class="material-symbols-outlined">upload_file</span>
+                <span>Bulk Upload</span>
+            </a>
             {% endif %}
         </div>
     </aside>

@@ -1,0 +1,540 @@
+{% extends "events/base.html" %}
+
+{% block title %}Bulk Upload Events - ChapterOS{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Bulk Upload Events</h1>
+            <p class="text-neutral-400 mt-1">Upload multiple events at once using a CSV file.</p>
+        </div>
+        <a href="{% url 'events:calendar' %}" class="text-neutral-400 hover:text-white transition-colors rounded-full p-1">
+            <span class="material-symbols-outlined">close</span>
+        </a>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" class="mb-6 hidden">
+        <div id="alert-content" class="p-4 rounded-lg border flex items-start gap-3">
+            <span id="alert-icon" class="material-symbols-outlined text-xl flex-shrink-0 mt-0.5"></span>
+            <div>
+                <h3 id="alert-title" class="font-semibold text-sm"></h3>
+                <p id="alert-message" class="text-sm mt-1"></p>
+            </div>
+            <button id="alert-close" class="ml-auto text-xl opacity-60 hover:opacity-100 transition-opacity">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Instructions Panel -->
+    <div class="mb-6 p-4 bg-gradient-to-r from-neutral-800/50 to-neutral-800/30 border border-neutral-700 rounded-lg text-sm text-neutral-300 space-y-3">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-orange-500">info</span>
+            <h3 class="font-semibold text-white">CSV Format Requirements</h3>
+        </div>
+        <p class="text-neutral-400">Please ensure your CSV file has the following columns:</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">start_date</code>
+                    <span class="text-xs text-neutral-500">(Required, YYYY-MM-DD)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">title</code>
+                    <span class="text-xs text-neutral-500">(Required)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">category</code>
+                    <span class="text-xs text-neutral-500">(Required, existing category)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">end_date</code>
+                    <span class="text-xs text-neutral-500">(Optional, YYYY-MM-DD)</span>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">start_time</code>
+                    <span class="text-xs text-neutral-500">(Optional, HH:MM)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">end_time</code>
+                    <span class="text-xs text-neutral-500">(Optional, HH:MM)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">description</code>
+                    <span class="text-xs text-neutral-500">(Optional)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    <code class="bg-neutral-700 px-2 py-1 rounded text-xs">location</code>
+                    <span class="text-xs text-neutral-500">(Optional)</span>
+                </div>
+            </div>
+        </div>
+        <div class="pt-3 border-t border-neutral-700">
+            <a href="{% url 'events:download_sample_csv' %}" class="font-semibold text-orange-500 hover:text-orange-400 inline-flex items-center gap-2 transition-colors">
+                <span class="material-symbols-outlined">download</span>
+                Download Sample CSV Template
+            </a>
+        </div>
+    </div>
+
+    <!-- File Upload Form -->
+    <form id="bulk-upload-form" method="post" enctype="multipart/form-data" action="{% url 'events:bulk_upload' %}">
+        {% csrf_token %}
+        <div class="space-y-6">
+            <!-- File Upload Area -->
+            <div class="relative">
+                <label for="{{ form.csv_file.id_for_label }}" class="block mb-3 text-sm font-medium text-neutral-300">
+                    {{ form.csv_file.label }}
+                </label>
+                <div id="file-drop-zone" class="border-2 border-dashed border-neutral-600 rounded-lg p-8 text-center hover:border-neutral-500 transition-colors cursor-pointer">
+                    <div id="file-upload-content">
+                        <span class="material-symbols-outlined text-4xl text-neutral-500 mb-3 block">cloud_upload</span>
+                        <p class="text-neutral-400 mb-2">Drop your CSV file here or click to browse</p>
+                        <p class="text-xs text-neutral-500">Maximum file size: 10MB</p>
+                    </div>
+                    <div id="file-selected-content" class="hidden">
+                        <span class="material-symbols-outlined text-4xl text-green-500 mb-3 block">check_circle</span>
+                        <p id="selected-file-name" class="text-neutral-300 font-medium"></p>
+                        <p id="selected-file-size" class="text-xs text-neutral-500 mt-1"></p>
+                        <button type="button" id="remove-file-btn" class="text-red-400 hover:text-red-300 text-xs mt-2 transition-colors">
+                            Remove file
+                        </button>
+                    </div>
+                </div>
+                {{ form.csv_file }}
+            </div>
+
+            <!-- Processing Indicator -->
+            <div id="processing-indicator" class="hidden bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                <div class="flex items-center gap-3">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+                    <span class="text-neutral-300">Processing file...</span>
+                </div>
+            </div>
+
+            <!-- Upload Button -->
+            <div class="flex justify-end pt-4">
+                <button id="upload-button" type="submit" class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 disabled:bg-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 transform" disabled>
+                    <span id="upload-icon" class="material-symbols-outlined">upload_file</span>
+                    <span id="upload-text">Upload and Process File</span>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Preview Container -->
+    <div id="preview-container" class="mt-8 hidden">
+        <div class="bg-gradient-to-r from-neutral-800/50 to-neutral-800/30 border border-neutral-700 rounded-lg">
+            <div class="p-4 border-b border-neutral-700 bg-neutral-800/30">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined">preview</span>
+                        File Preview
+                    </h2>
+                    <div id="preview-summary" class="text-sm text-neutral-400"></div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-neutral-300">
+                    <thead class="text-xs text-neutral-200 uppercase bg-neutral-800 sticky top-0">
+                        <tr id="preview-header">
+                        </tr>
+                    </thead>
+                    <tbody id="preview-body" class="bg-neutral-900">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_csv_file');
+    const uploadButton = document.getElementById('upload-button');
+    const previewContainer = document.getElementById('preview-container');
+    const previewHeader = document.getElementById('preview-header');
+    const previewBody = document.getElementById('preview-body');
+    const previewSummary = document.getElementById('preview-summary');
+    const form = document.getElementById('bulk-upload-form');
+    const fileDropZone = document.getElementById('file-drop-zone');
+    const fileUploadContent = document.getElementById('file-upload-content');
+    const fileSelectedContent = document.getElementById('file-selected-content');
+    const selectedFileName = document.getElementById('selected-file-name');
+    const selectedFileSize = document.getElementById('selected-file-size');
+    const removeFileBtn = document.getElementById('remove-file-btn');
+    const processingIndicator = document.getElementById('processing-indicator');
+    const alertContainer = document.getElementById('alert-container');
+    const uploadIcon = document.getElementById('upload-icon');
+    const uploadText = document.getElementById('upload-text');
+
+    let validCategories = [];
+    let isProcessing = false;
+
+    // Alert System
+    function showAlert(type, title, message) {
+        const alertContent = document.getElementById('alert-content');
+        const alertIcon = document.getElementById('alert-icon');
+        const alertTitle = document.getElementById('alert-title');
+        const alertMessage = document.getElementById('alert-message');
+        
+        // Reset classes
+        alertContent.className = 'p-4 rounded-lg border flex items-start gap-3';
+        
+        switch(type) {
+            case 'success':
+                alertContent.classList.add('bg-green-900/30', 'border-green-700', 'text-green-100');
+                alertIcon.textContent = 'check_circle';
+                alertIcon.className = 'material-symbols-outlined text-xl flex-shrink-0 mt-0.5 text-green-400';
+                break;
+            case 'error':
+                alertContent.classList.add('bg-red-900/30', 'border-red-700', 'text-red-100');
+                alertIcon.textContent = 'error';
+                alertIcon.className = 'material-symbols-outlined text-xl flex-shrink-0 mt-0.5 text-red-400';
+                break;
+            case 'warning':
+                alertContent.classList.add('bg-yellow-900/30', 'border-yellow-700', 'text-yellow-100');
+                alertIcon.textContent = 'warning';
+                alertIcon.className = 'material-symbols-outlined text-xl flex-shrink-0 mt-0.5 text-yellow-400';
+                break;
+            case 'info':
+                alertContent.classList.add('bg-blue-900/30', 'border-blue-700', 'text-blue-100');
+                alertIcon.textContent = 'info';
+                alertIcon.className = 'material-symbols-outlined text-xl flex-shrink-0 mt-0.5 text-blue-400';
+                break;
+        }
+        
+        alertTitle.textContent = title;
+        alertMessage.textContent = message;
+        alertContainer.classList.remove('hidden');
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                hideAlert();
+            }, 5000);
+        }
+    }
+
+    function hideAlert() {
+        alertContainer.classList.add('hidden');
+    }
+
+    // Close alert button
+    document.getElementById('alert-close').addEventListener('click', hideAlert);
+
+    // File size formatter
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // File selection display
+    function showFileSelected(file) {
+        fileUploadContent.classList.add('hidden');
+        fileSelectedContent.classList.remove('hidden');
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = formatFileSize(file.size);
+        fileDropZone.classList.add('border-green-500', 'bg-green-900/10');
+        fileDropZone.classList.remove('border-neutral-600');
+    }
+
+    function hideFileSelected() {
+        fileUploadContent.classList.remove('hidden');
+        fileSelectedContent.classList.add('hidden');
+        fileDropZone.classList.remove('border-green-500', 'bg-green-900/10');
+        fileDropZone.classList.add('border-neutral-600');
+    }
+
+    // Remove file button
+    removeFileBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        hideFileSelected();
+        resetPreview();
+        hideAlert();
+    });
+
+    // Reset preview
+    function resetPreview() {
+        previewContainer.classList.add('hidden');
+        uploadButton.disabled = true;
+        uploadIcon.textContent = 'upload_file';
+        uploadText.textContent = 'Upload and Process File';
+    }
+
+    // Drag and drop
+    fileDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        fileDropZone.classList.add('border-orange-500', 'bg-orange-900/10');
+    });
+
+    fileDropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        fileDropZone.classList.remove('border-orange-500', 'bg-orange-900/10');
+    });
+
+    fileDropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        fileDropZone.classList.remove('border-orange-500', 'bg-orange-900/10');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                fileInput.files = files;
+                handleFileSelect({ target: { files: files } });
+            } else {
+                showAlert('error', 'Invalid File Type', 'Please select a CSV file.');
+            }
+        }
+    });
+
+    fileDropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Prevent default file input styling
+    fileInput.style.display = 'none';
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch("{% url 'events:api_event_categories' %}");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            validCategories = data.map(cat => cat.name);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            showAlert('error', 'Category Fetch Error', 'Could not fetch event categories for validation. Please try again.');
+            throw error;
+        }
+    };
+
+    const validateRow = (row) => {
+        const errors = [];
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        const timeRegex = /^\d{2}:\d{2}(:\d{2})?$/;
+
+        if (!row.title || row.title.trim() === '') {
+            errors.push('Title is required.');
+        }
+        if (!row.start_date || row.start_date.trim() === '') {
+            errors.push('Start date is required.');
+        } else if (!dateRegex.test(row.start_date.trim())) {
+            errors.push('Start date format must be YYYY-MM-DD.');
+        }
+        if (!row.category || row.category.trim() === '') {
+            errors.push('Category is required.');
+        } else if (validCategories.length > 0 && !validCategories.includes(row.category.trim())) {
+            errors.push(`Category "${row.category.trim()}" does not exist.`);
+        }
+
+        if (row.end_date && row.end_date.trim() !== '' && !dateRegex.test(row.end_date.trim())) {
+            errors.push('End date format must be YYYY-MM-DD.');
+        }
+        if (row.start_time && row.start_time.trim() !== '' && !timeRegex.test(row.start_time.trim())) {
+            errors.push('Start time format must be HH:MM.');
+        }
+        if (row.end_time && row.end_time.trim() !== '' && !timeRegex.test(row.end_time.trim())) {
+            errors.push('End time format must be HH:MM.');
+        }
+
+        return errors;
+    };
+
+    const handleFileSelect = async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            resetPreview();
+            hideFileSelected();
+            return;
+        }
+
+        // File size validation (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            showAlert('error', 'File Too Large', 'Please select a file smaller than 10MB.');
+            fileInput.value = '';
+            return;
+        }
+
+        // File type validation
+        if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
+            showAlert('error', 'Invalid File Type', 'Please select a CSV file.');
+            fileInput.value = '';
+            return;
+        }
+
+        showFileSelected(file);
+        hideAlert();
+        isProcessing = true;
+        processingIndicator.classList.remove('hidden');
+        previewContainer.classList.remove('hidden');
+        previewHeader.innerHTML = '<th class="px-4 py-3 text-center" colspan="100%">Processing file...</th>';
+        previewBody.innerHTML = '';
+        previewSummary.innerHTML = '<div class="flex items-center gap-2"><div class="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>Validating data...</div>';
+        uploadButton.disabled = true;
+
+        try {
+            await fetchCategories();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const text = e.target.result;
+                    const rows = text.split(/\r\n|\n/).filter(row => row.trim() !== '');
+                    
+                    if (rows.length < 2) {
+                        throw new Error('CSV file must contain a header row and at least one data row.');
+                    }
+
+                    const headers = rows[0].split(',').map(h => h.trim());
+                    const requiredHeaders = ['start_date', 'title', 'category'];
+                    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+
+                    if (missingHeaders.length > 0) {
+                        throw new Error(`CSV is missing required headers: ${missingHeaders.join(', ')}.`);
+                    }
+
+                    // Build table header
+                    previewHeader.innerHTML = '';
+                    headers.forEach(header => {
+                        const th = document.createElement('th');
+                        th.scope = 'col';
+                        th.className = 'px-4 py-3 text-left';
+                        th.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        previewHeader.appendChild(th);
+                    });
+                    const thError = document.createElement('th');
+                    thError.scope = 'col';
+                    thError.className = 'px-4 py-3 text-left';
+                    thError.textContent = 'Validation Status';
+                    previewHeader.appendChild(thError);
+
+                    let errorCount = 0;
+                    const dataRows = rows.slice(1);
+                    previewBody.innerHTML = '';
+
+                    dataRows.forEach((rowStr, index) => {
+                        const values = rowStr.split(',');
+                        const rowData = headers.reduce((obj, header, index) => {
+                            obj[header] = values[index] ? values[index].trim() : '';
+                            return obj;
+                        }, {});
+
+                        const errors = validateRow(rowData);
+                        const tr = document.createElement('tr');
+                        tr.className = 'border-b border-neutral-800 hover:bg-neutral-800/30 transition-colors';
+
+                        if (errors.length > 0) {
+                            errorCount++;
+                            tr.classList.add('bg-red-900/20');
+                        } else {
+                            tr.classList.add('bg-green-900/10');
+                        }
+
+                        headers.forEach(header => {
+                            const td = document.createElement('td');
+                            td.className = 'px-4 py-3 text-sm';
+                            td.textContent = rowData[header] || '-';
+                            tr.appendChild(td);
+                        });
+
+                        const tdError = document.createElement('td');
+                        tdError.className = 'px-4 py-3 text-sm';
+                        if (errors.length > 0) {
+                            tdError.innerHTML = `<div class="space-y-1">${errors.map(e => `<div class="text-red-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span>${e}</div>`).join('')}</div>`;
+                        } else {
+                            tdError.innerHTML = `<div class="text-green-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span>Valid</div>`;
+                        }
+                        tr.appendChild(tdError);
+                        previewBody.appendChild(tr);
+                    });
+
+                    // Update summary
+                    let summaryMessage = '';
+                    if (errorCount > 0) {
+                        summaryMessage = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="font-semibold text-red-400">${errorCount} of ${dataRows.length} rows have errors</span></div>`;
+                        uploadButton.disabled = true;
+                        showAlert('warning', 'Validation Errors Found', `${errorCount} rows have validation errors. Please fix them in your CSV and re-upload.`);
+                    } else {
+                        summaryMessage = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400">check_circle</span><span class="font-semibold text-green-400">All ${dataRows.length} rows validated successfully</span></div>`;
+                        uploadButton.disabled = false;
+                        uploadIcon.textContent = 'publish';
+                        uploadText.textContent = 'Upload Events';
+                        showAlert('success', 'Validation Complete', `All ${dataRows.length} rows are valid and ready for upload.`);
+                    }
+                    previewSummary.innerHTML = summaryMessage;
+
+                } catch (error) {
+                    console.error('Error processing CSV:', error);
+                    previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">${error.message}</span></div>`;
+                    previewHeader.innerHTML = '<th class="px-4 py-3 text-center text-red-400" colspan="100%">Error processing file</th>';
+                    previewBody.innerHTML = '';
+                    uploadButton.disabled = true;
+                    showAlert('error', 'File Processing Error', error.message);
+                } finally {
+                    isProcessing = false;
+                    processingIndicator.classList.add('hidden');
+                }
+            };
+
+            reader.onerror = () => {
+                const errorMsg = 'Error reading file. Please try again.';
+                previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">${errorMsg}</span></div>`;
+                uploadButton.disabled = true;
+                showAlert('error', 'File Read Error', errorMsg);
+                isProcessing = false;
+                processingIndicator.classList.add('hidden');
+            };
+
+            reader.readAsText(file);
+
+        } catch (error) {
+            console.error('Error in file processing:', error);
+            previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">Failed to process file</span></div>`;
+            uploadButton.disabled = true;
+            showAlert('error', 'Processing Error', 'Failed to process file. Please try again.');
+            isProcessing = false;
+            processingIndicator.classList.add('hidden');
+        }
+    };
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    form.addEventListener('submit', (e) => {
+        if (uploadButton.disabled || isProcessing) {
+            e.preventDefault();
+            if (isProcessing) {
+                showAlert('warning', 'Processing in Progress', 'Please wait for file processing to complete.');
+            } else {
+                showAlert('warning', 'Cannot Upload', 'Please fix the errors in your CSV file or select a valid file.');
+            }
+            return;
+        }
+
+        // Show uploading state
+        uploadButton.disabled = true;
+        uploadIcon.textContent = 'cloud_upload';
+        uploadText.textContent = 'Uploading...';
+        uploadButton.classList.add('animate-pulse');
+        
+        showAlert('info', 'Upload in Progress', 'Your events are being uploaded. Please wait...');
+    });
+});
+</script>
+{% endblock %}
