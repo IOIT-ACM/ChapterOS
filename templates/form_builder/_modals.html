@@ -1,0 +1,109 @@
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<!-- API Schema Modal -->
+<div x-show="showApiModal" @keydown.escape.window="showApiModal = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <div @click.away="showApiModal = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-neutral-700">
+        <div class="flex justify-between items-center p-4 border-b border-neutral-700">
+            <h3 class="text-lg font-bold text-white">Form API Schema</h3>
+            <button @click="showApiModal = false" class="p-1 text-neutral-400 hover:text-white rounded-full"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6 overflow-y-auto">
+            <p class="text-sm text-neutral-400 mb-4">Endpoint: <code class="bg-neutral-800 text-orange-400 px-1 rounded-md text-xs">/form_builder/api/forms/{{ form.pk }}/schema/</code></p>
+            <pre class="bg-black p-4 rounded-lg text-sm text-green-400 overflow-x-auto"><code x-text="JSON.stringify(form, null, 2)"></code></pre>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Form Details Modal -->
+<div x-show="showEditFormModal" @keydown.escape.window="showEditFormModal = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <form id="edit-form-details" @submit.prevent="saveFormDetails()" @click.away="showEditFormModal = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col border border-neutral-700">
+        <div class="flex justify-between items-center p-4 border-b border-neutral-700">
+            <h3 class="text-lg font-bold text-white">Edit Form Details</h3>
+            <button type="button" @click="showEditFormModal = false" class="p-1 text-neutral-400 hover:text-white rounded-full"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label for="form_title" class="block text-sm font-medium text-neutral-300 mb-1">Title</label>
+                <input type="text" id="form_title" name="title" :value="form.title" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+            </div>
+            <div>
+                <label for="form_description" class="block text-sm font-medium text-neutral-300 mb-1">Description</label>
+                <textarea id="form_description" name="description" :value="form.description" rows="3" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
+            </div>
+        </div>
+        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-end gap-3">
+            <button type="button" @click="showEditFormModal = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<!-- Section Modal -->
+<div x-show="showSectionModal" @keydown.escape.window="showSectionModal = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <form @submit.prevent="saveSection()" @click.away="showSectionModal = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col border border-neutral-700">
+        <div class="flex justify-between items-center p-4 border-b border-neutral-700">
+            <h3 class="text-lg font-bold text-white" x-text="currentSection.id ? 'Edit Section' : 'Add Section'"></h3>
+            <button type="button" @click="showSectionModal = false" class="p-1 text-neutral-400 hover:text-white rounded-full"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6">
+            <label for="section_title" class="block text-sm font-medium text-neutral-300 mb-1">Section Title</label>
+            <input type="text" id="section_title" x-model="currentSection.title" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500" required>
+        </div>
+        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-end gap-3">
+            <button type="button" @click="showSectionModal = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700">Save Section</button>
+        </div>
+    </form>
+</div>
+
+<!-- Question Modal -->
+<div x-show="showQuestionModal" @keydown.escape.window="showQuestionModal = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <form @submit.prevent="saveQuestion()" @click.away="showQuestionModal = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col border border-neutral-700">
+        <div class="flex justify-between items-center p-4 border-b border-neutral-700">
+            <h3 class="text-lg font-bold text-white" x-text="currentQuestion.id ? 'Edit Question' : 'Add Question'"></h3>
+            <button type="button" @click="showQuestionModal = false" class="p-1 text-neutral-400 hover:text-white rounded-full"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label for="question_label" class="block text-sm font-medium text-neutral-300 mb-1">Label / Question Text</label>
+                <input type="text" id="question_label" x-model="currentQuestion.label" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500" required>
+            </div>
+            <div>
+                <label for="question_type" class="block text-sm font-medium text-neutral-300 mb-1">Question Type</label>
+                <select id="question_type" x-model="currentQuestion.type" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <option value="text">Text</option>
+                    <option value="email">Email</option>
+                    <option value="textarea">Text Area</option>
+                    <option value="radio">Radio</option>
+                    <option value="checkbox">Checkbox</option>
+                    <option value="dropdown">Dropdown</option>
+                </select>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="question_is_required" x-model="currentQuestion.is_required" class="h-4 w-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
+                <label for="question_is_required" class="ml-2 block text-sm text-neutral-300">This question is required</label>
+            </div>
+        </div>
+        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-end gap-3">
+            <button type="button" @click="showQuestionModal = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700">Save Question</button>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div x-show="showDeleteModal.open" @keydown.escape.window="showDeleteModal.open = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <div @click.away="showDeleteModal.open = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-red-500/50">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-900/50 mb-4">
+                <span class="material-symbols-outlined text-red-400 text-2xl">delete_forever</span>
+            </div>
+            <h3 class="text-lg font-bold text-white" x-text="`Delete ${showDeleteModal.type}`"></h3>
+            <p class="text-sm text-neutral-400 mt-2">Are you sure you want to delete this <span x-text="showDeleteModal.type.toLowerCase()"></span>? This action cannot be undone.</p>
+        </div>
+        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-center gap-3">
+            <button type="button" @click="showDeleteModal.open = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 w-full">Cancel</button>
+            <button type="button" @click="confirmDelete()" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 w-full">Yes, Delete</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Form - ChapterOS{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-neutral-900 p-8 rounded-lg shadow-lg border border-neutral-700">
+    <h1 class="text-2xl font-bold text-white mb-6">Create a New Form</h1>
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <div class="relative z-0 w-full group">
+            {{ form.title }}
+            <label for="{{ form.title.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Form Title</label>
+        </div>
+        <div class="relative z-0 w-full group">
+            {{ form.description }}
+            <label for="{{ form.description.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description (Optional)</label>
+        </div>
+        <div class="relative z-0 w-full group">
+            {{ form.deadline }}
+            <label for="{{ form.deadline.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">Deadline (Optional)</label>
+        </div>
+        <div class="flex justify-end gap-4 pt-4">
+            <a href="{% url 'form_builder:form_list' %}" class="px-6 py-2.5 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2.5 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors">
+                Create and Build Form
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

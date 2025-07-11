@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete - ChapterOS{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-neutral-900 p-8 rounded-lg shadow-lg border-t-4 border-red-500">
+    <h1 class="text-2xl font-bold text-white mb-4">Delete Form</h1>
+    <p class="text-neutral-300 mb-6">Are you sure you want to delete the form "<strong class="font-semibold">{{ object.title }}</strong>"? This action cannot be undone.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'form_builder:form_list' %}" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">
+                Yes, Delete
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
