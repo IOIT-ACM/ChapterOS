@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Form Builder - ChapterOS{% endblock %}
+{% block title %}Form Builder{% endblock %}
 
 {% block content %}
 <div class="flex justify-between items-center mb-6">
@@ -19,7 +19,7 @@
                     <th scope="col" class="px-6 py-3">Title</th>
                     <th scope="col" class="px-6 py-3">Status</th>
                     <th scope="col" class="px-6 py-3">Created</th>
-                    <th scope="col" class="px-6 py-3">Last Updated</th>
+                    <th scope="col" class="px-6 py-3">Submissions</th>
                     <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
                 </tr>
             </thead>
@@ -37,11 +37,11 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">{{ form.created_at|date:"M d, Y" }}</td>
-                    <td class="px-6 py-4">{{ form.updated_at|timesince }} ago</td>
+                    <td class="px-6 py-4">{{ form.submissions.count }}</td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="{% url 'form_builder:form_build' form.pk %}" class="font-medium text-orange-500 hover:underline">Build</a>
-                            <a href="{% url 'form_builder:form_delete' form.pk %}" class="font-medium text-red-500 hover:underline">Delete</a>
+                            <a href="{% url 'form_builder:form_build' form.slug %}" class="font-medium text-orange-500 hover:underline">Build</a>
+                            <a href="{% url 'form_builder:form_delete' form.slug %}" class="font-medium text-red-500 hover:underline">Delete</a>
                         </div>
                     </td>
                 </tr>

@@ -1,0 +1,96 @@
+erDiagram
+    forms {
+        int id PK "Primary key - unique identifier for each form"
+        int user_id FK "Foreign key - references the user who owns/created this form"
+        string title "Human-readable title of the form, e.g., 'Job Application Form'"
+        string description "Detailed description explaining the form's purpose"
+        string slug UK "URL-friendly unique identifier, e.g., 'recruitment-form-2024'"
+        boolean is_active "Flag indicating if the form is currently accepting submissions"
+        timestamp created_at "Timestamp when the form was created"
+        timestamp deadline "Optional deadline after which submissions are no longer accepted"
+        string confirmation_message "Message shown after successful submission"
+    }
+
+    questions {
+        int id PK "Primary key - unique identifier for each question"
+        int form_id FK "Foreign key - references the form this question belongs to"
+        string type "Question type ENUM('short_answer', 'paragraph', 'multiple_choice', 'checkboxes', 'dropdown', 'file_upload', 'linear_scale', 'rating', 'multiple_choice_grid', 'checkbox_grid', 'date', 'time')"
+        string identifier UK "Unique identifier within the form scope, e.g., 'applicant-name'"
+        string question_text "The actual question text displayed to users"
+        string description_text "Optional helper text or additional context for the question"
+        int display_order "Order in which questions appear in the form (1, 2, 3, etc.)"
+        boolean is_required "Whether this question must be answered before form submission"
+        json validation_rules "JSON object containing validation rules (max_length, min_length, pattern, etc.)"
+        json question_config "Type-specific configuration (scale ranges, rating icons, grid settings, etc.)"
+    }
+
+    question_options {
+        int id PK "Primary key - unique identifier for each option"
+        int question_id FK "Foreign key - references the question this option belongs to"
+        string label "Display text shown to users, e.g., 'Yes, I'm interested'"
+        string value "Internal value stored in database, e.g., 'yes'"
+        int display_order "Order in which options appear for the question"
+        boolean is_other_option "Flag indicating if this is an 'Other' option that allows custom text input"
+    }
+
+    grid_rows {
+        int id PK "Primary key - unique identifier for each grid row"
+        int question_id FK "Foreign key - references the grid question this row belongs to"
+        string label "Display text for the row, e.g., 'Product Quality'"
+        string value "Internal value for the row, e.g., 'quality'"
+        int display_order "Order in which rows appear in the grid"
+    }
+
+    grid_columns {
+        int id PK "Primary key - unique identifier for each grid column"
+        int question_id FK "Foreign key - references the grid question this column belongs to"
+        string label "Display text for the column, e.g., 'Excellent'"
+        string value "Internal value for the column, e.g., 'excellent'"
+        int display_order "Order in which columns appear in the grid"
+    }
+
+    question_conditions {
+        int id PK "Primary key - unique identifier for each condition"
+        int question_id FK "Foreign key - the question that will be shown/hidden based on this condition"
+        int depends_on_question_id FK "Foreign key - the question whose answer determines if the target question is shown"
+        string trigger_value "The answer value that triggers showing the question (JSON array for multiple trigger values)"
+        string condition_type "Type of condition: 'show_if', 'hide_if', 'go_to_section'"
+    }
+
+    submissions {
+        int id PK "Primary key - unique identifier for each form submission"
+        int form_id FK "Foreign key - references the form that was submitted"
+        string respondent_email "Optional email of the person who submitted the form"
+        timestamp submitted_at "Timestamp when the submission was completed"
+    }
+
+    answers {
+        int id PK "Primary key - unique identifier for each answer"
+        int submission_id FK "Foreign key - references the submission this answer belongs to"
+        int question_id FK "Foreign key - references the question being answered"
+        text answer_value "The actual answer data - can be text, single value, or JSON array for multiple selections"
+        string other_text "Additional text when 'Other' option is selected"
+    }
+
+    grid_answers {
+        int id PK "Primary key - unique identifier for each grid answer"
+        int answer_id FK "Foreign key - references the parent answer record"
+        int grid_row_id FK "Foreign key - references the grid row"
+        int grid_column_id FK "Foreign key - references the grid column (for single choice)"
+        json selected_columns "JSON array of column IDs (for checkbox grids allowing multiple selections per row)"
+    }
+
+    %% Relationships
+    users ||--o{ forms : "creates"
+    forms ||--o{ questions : "contains"
+    forms ||--o{ submissions : "receives"
+    questions ||--o{ question_options : "can have"
+    questions ||--o{ grid_rows : "can have (for grid questions)"
+    questions ||--o{ grid_columns : "can have (for grid questions)"
+    questions ||--o{ question_conditions : "is shown if"
+    questions }o--|| question_conditions : "depends on"
+    submissions ||--o{ answers : "contains"
+    questions ||--o{ answers : "is answered by"
+    answers ||--o{ grid_answers : "can have (for grid questions)"
+    grid_rows ||--o{ grid_answers : "referenced by"
+    grid_columns ||--o{ grid_answers : "referenced by"

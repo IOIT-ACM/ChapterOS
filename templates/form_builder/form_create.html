@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Create New Form - ChapterOS{% endblock %}
+{% block title %}Create New Form{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto bg-neutral-900 p-8 rounded-lg shadow-lg border border-neutral-700">
@@ -14,6 +14,10 @@
         <div class="relative z-0 w-full group">
             {{ form.description }}
             <label for="{{ form.description.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description (Optional)</label>
+        </div>
+        <div class="relative z-0 w-full group">
+            {{ form.confirmation_message }}
+            <label for="{{ form.confirmation_message.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirmation Message (Optional)</label>
         </div>
         <div class="relative z-0 w-full group">
             {{ form.deadline }}
