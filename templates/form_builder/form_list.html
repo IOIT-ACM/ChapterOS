@@ -19,7 +19,9 @@
             <div class="p-6">
                 <div class="flex justify-between items-start">
                     <h2 class="text-lg font-bold text-white mb-2">{{ form.title }}</h2>
-                    {% if form.is_active %}
+                    {% if form.is_approved %}
+                        <span class="px-2 py-1 text-xs font-medium text-cyan-300 bg-cyan-900/50 rounded-full">Approved</span>
+                    {% elif form.is_active %}
                         <span class="px-2 py-1 text-xs font-medium text-green-300 bg-green-900/50 rounded-full">Active</span>
                     {% else %}
                         <span class="px-2 py-1 text-xs font-medium text-red-300 bg-red-900/50 rounded-full">Inactive</span>
@@ -38,10 +40,17 @@
                 </div>
             </div>
             <div class="p-4 bg-neutral-950/50 border-t border-neutral-800 flex items-center justify-end gap-3">
-                <a href="{% url 'form_builder:form_delete' form.slug %}" class="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">Delete</a>
-                <a href="{% url 'form_builder:form_build' form.slug %}" class="px-4 py-1.5 bg-orange-600 text-white text-sm font-semibold rounded-md hover:bg-orange-700 transition-colors">
-                    Build
-                </a>
+                {% if form.is_approved %}
+                    <span class="px-4 py-1.5 text-sm text-neutral-400 font-semibold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">lock</span>
+                        Approved & Locked
+                    </span>
+                {% else %}
+                    <a href="{% url 'form_builder:form_delete' form.slug %}" class="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">Delete</a>
+                    <a href="{% url 'form_builder:form_build' form.slug %}" class="px-4 py-1.5 bg-orange-600 text-white text-sm font-semibold rounded-md hover:bg-orange-700 transition-colors">
+                        Build
+                    </a>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

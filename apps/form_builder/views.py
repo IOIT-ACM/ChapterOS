@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import F
+from django.core.exceptions import PermissionDenied
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm, FormSettingsForm
 from .serializers import (
@@ -64,6 +65,11 @@ class FormSettingsView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     template_name = 'form_builder/form_settings.html'
     slug_url_kwarg = 'slug'
 
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse('form_builder:form_settings', kwargs={'slug': self.object.slug})
 
@@ -77,6 +83,11 @@ class FormDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     success_url = reverse_lazy('form_builder:form_list')
     slug_url_kwarg = 'slug'
 
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().is_approved:
+            raise PermissionDenied("Approved forms cannot be deleted.")
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         messages.success(self.request, f"Form '{self.object.title}' has been deleted.")
         return super().form_valid(form)
@@ -84,6 +95,9 @@ class FormDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
 @login_required
 def form_builder_view(request, slug):
     form = get_object_or_404(Form, slug=slug, user=request.user)
+    if form.is_approved:
+        raise PermissionDenied("Approved forms cannot be modified.")
+
     if request.method == 'POST':
         form.title = request.POST.get('title', form.title)
         form.description = request.POST.get('description', form.description)
@@ -152,6 +166,8 @@ class QuestionCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         form = get_object_or_404(Form, pk=self.request.data.get('form'), user=self.request.user)
+        if form.is_approved:
+            raise PermissionDenied("Cannot add questions to an approved form.")
         serializer.save(form=form)
 
 class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -161,6 +177,8 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
         
         options_data = request.data.pop('options', None)
         grid_rows_data = request.data.pop('grid_rows', None)
@@ -218,6 +236,9 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
+
         form = instance.form
         deleted_order = instance.display_order
 
@@ -247,9 +268,29 @@ class QuestionOptionCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         question = get_object_or_404(Question, pk=self.request.data.get('question'), form__user=self.request.user)
+        if question.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
         serializer.save(question=question)
 
 class QuestionOptionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = QuestionOption.objects.all()
     serializer_class = QuestionOptionSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.question.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.question.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.question.form.is_approved:
+            raise PermissionDenied("Approved forms cannot be modified.")
+        return super().destroy(request, *args, **kwargs)

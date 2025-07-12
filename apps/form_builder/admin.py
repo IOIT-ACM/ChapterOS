@@ -31,6 +31,21 @@ class QuestionInline(admin.StackedInline):
     show_change_link = True
     inlines = [QuestionOptionInline, GridRowInline, GridColumnInline]
 
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.is_approved:
+            return False
+        return super().has_add_permission(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.is_approved:
+            return False
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.is_approved:
+            return False
+        return super().has_delete_permission(request, obj)
+
 @admin.register(Form)
 class FormAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'is_active', 'is_approved', 'created_at')
@@ -59,6 +74,10 @@ class FormAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
         
+        if obj and obj.is_approved:
+            # If form is approved, make all fields read-only.
+            return [f.name for f in self.model._meta.fields if f.name != 'id']
+
         is_chair = request.user.groups.filter(name='Chair').exists()
         
         if not request.user.is_superuser and not is_chair:
@@ -72,6 +91,21 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('form', 'type', 'is_required')
     search_fields = ('question_text',)
     inlines = [QuestionOptionInline, GridRowInline, GridColumnInline, QuestionConditionInline]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.form.is_approved:
+            return [f.name for f in self.model._meta.fields]
+        return super().get_readonly_fields(request, obj)
+
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.form.is_approved:
+            return False
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.form.is_approved:
+            return False
+        return super().has_delete_permission(request, obj)
 
 class AnswerInline(admin.TabularInline):
     model = Answer
