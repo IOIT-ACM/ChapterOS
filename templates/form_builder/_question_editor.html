@@ -49,7 +49,7 @@
             </div>
         </template>
 
-        <template x-if="['multiple_choice', 'checkboxes', 'dropdown'].includes(selectedQuestion.type)">
+        <template x-if="['multiple_choice', 'single_choice', 'dropdown'].includes(selectedQuestion.type)">
             <div>
                 <label class="block text-sm font-medium text-neutral-300 mb-2">Options</label>
                 <div class="space-y-2">

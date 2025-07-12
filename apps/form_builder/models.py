@@ -34,7 +34,7 @@ class Question(models.Model):
         ('short_answer', 'Short Answer'),
         ('paragraph', 'Paragraph'),
         ('multiple_choice', 'Multiple Choice'),
-        ('checkboxes', 'Checkboxes'),
+        ('multiple_choice', 'Single Choice'),
         ('dropdown', 'Dropdown'),
         ('file_upload', 'File Upload'),
         ('linear_scale', 'Linear Scale'),

@@ -95,7 +95,7 @@ class FormSchemaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = [
-            'title', 'description',
+            'id', 'title', 'description', 'slug', 'is_active',
             'deadline', 'confirmation_message', 'questions'
         ]
 
