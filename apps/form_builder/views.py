@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, DeleteView
+from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.utils import timezone
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
-from .forms import FormCreateForm
+from .forms import FormCreateForm, FormSettingsForm
 from .serializers import (
     FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer,
     PublicFormSerializer
@@ -55,6 +55,19 @@ class OwnerRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         self.object = self.get_object()
         return self.request.user == self.object.user
+
+class FormSettingsView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
+    model = Form
+    form_class = FormSettingsForm
+    template_name = 'form_builder/form_settings.html'
+    slug_url_kwarg = 'slug'
+
+    def get_success_url(self):
+        return reverse('form_builder:form_settings', kwargs={'slug': self.object.slug})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Form settings updated successfully.")
+        return super().form_valid(form)
 
 class FormDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Form

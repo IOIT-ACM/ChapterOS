@@ -16,6 +16,7 @@ urlpatterns = [
     path('', views.FormListView.as_view(), name='form_list'),
     path('create/', views.FormCreateView.as_view(), name='form_create'),
     path('<slug:slug>/build/', views.form_builder_view, name='form_build'),
+    path('<slug:slug>/settings/', views.FormSettingsView.as_view(), name='form_settings'),
     path('<slug:slug>/delete/', views.FormDeleteView.as_view(), name='form_delete'),
     path('api/', include(api_urlpatterns)),
 ]

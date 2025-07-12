@@ -1,0 +1,65 @@
+{% extends "form_builder/base.html" %}
+
+{% block title %}Settings: {{ form.instance.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-10">
+        <a href="{% url 'form_builder:form_build' object.slug %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+            Back to Builder
+        </a>
+        <h1 class="text-3xl font-bold text-white">Form Settings</h1>
+        <p class="mt-2 text-neutral-400">Edit the core details of your form, "{{ object.title }}".</p>
+    </div>
+
+    <form method="post" class="space-y-8">
+        {% csrf_token %}
+        
+        <div class="relative z-0 w-full group">
+            {{ form.title }}
+            <label for="{{ form.title.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Form Title</label>
+        </div>
+        
+        <div class="relative z-0 w-full group">
+            {{ form.slug }}
+            <label for="{{ form.slug.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Form URL Slug</label>
+            <p class="text-xs text-neutral-500 mt-2">This is the unique part of the URL for your form. Changing this will change the form's link. Use only letters, numbers, hyphens, and underscores.</p>
+            {% if form.slug.errors %}
+                {% for error in form.slug.errors %}
+                    <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="relative z-0 w-full group">
+            {{ form.description }}
+            <label for="{{ form.description.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+            {{ form.confirmation_message }}
+            <label for="{{ form.confirmation_message.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirmation Message</label>
+        </div>
+
+        <div class="relative z-0 w-full group">
+            {{ form.deadline }}
+            <label for="{{ form.deadline.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">Deadline</label>
+        </div>
+
+        <div class="flex items-center gap-3">
+            {{ form.is_active }}
+            <label for="{{ form.is_active.id_for_label }}" class="text-sm text-neutral-300">Form is active and accepting responses</label>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4 border-t border-neutral-800">
+            <a href="{% url 'form_builder:form_build' object.slug %}" class="px-6 py-2.5 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2.5 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
