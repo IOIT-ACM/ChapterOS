@@ -8,18 +8,18 @@
 <div class="flex-1 overflow-y-auto p-4 space-y-6">
     <div>
         <label for="question_text" class="block text-sm font-medium text-neutral-300 mb-1">Question Text</label>
-        <input type="text" id="question_text" x-model.debounce.500ms="selectedQuestion.question_text" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+        <input type="text" id="question_text" x-model.debounce.500ms="selectedQuestion.question_text" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
     </div>
 
     <div>
         <label for="description_text" class="block text-sm font-medium text-neutral-300 mb-1">Description (Optional)</label>
-        <textarea id="description_text" x-model.debounce.500ms="selectedQuestion.description_text" @input="markDirty" rows="2" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
+        <textarea id="description_text" x-model.debounce.500ms="selectedQuestion.description_text" @input="markDirty" rows="2" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label for="question_type" class="block text-sm font-medium text-neutral-300 mb-1">Type</label>
-            <select id="question_type" x-model="selectedQuestion.type" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+            <select id="question_type" x-model="selectedQuestion.type" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 <template x-for="qType in questionTypes" :key="qType.value">
                     <option :value="qType.value" x-text="qType.name"></option>
                 </template>
@@ -39,7 +39,7 @@
         <template x-if="['short_answer', 'paragraph'].includes(selectedQuestion.type)">
             <div>
                 <label class="block text-sm font-medium text-neutral-300 mb-1">Placeholder Text</label>
-                <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.placeholder" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.placeholder" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
             </div>
         </template>
 
@@ -49,7 +49,7 @@
                 <div class="space-y-2">
                     <template x-for="(option, index) in selectedQuestion.options" :key="option.id || index">
                         <div class="flex items-center gap-2">
-                            <input type="text" x-model.debounce.500ms="option.label" @input="markDirty" class="flex-grow bg-neutral-800 border-neutral-600 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500">
+                            <input type="text" x-model.debounce.500ms="option.label" @input="markDirty" class="flex-grow bg-neutral-800 border-neutral-600 rounded-lg p-2 text-white text-sm focus:ring-orange-500 focus:border-orange-500" placeholder="Option label">
                             <button @click="removeOption(index)" class="p-2 text-neutral-500 hover:text-red-400 rounded-full hover:bg-red-900/50">
                                 <span class="material-symbols-outlined text-base">delete</span>
                             </button>
@@ -66,19 +66,19 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Min Value</label>
-                    <input type="number" x-model.number="selectedQuestion.question_config.min_value" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <input type="number" x-model.number="selectedQuestion.question_config.min_value" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Max Value</label>
-                    <input type="number" x-model.number="selectedQuestion.question_config.max_value" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <input type="number" x-model.number="selectedQuestion.question_config.max_value" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Min Label</label>
-                    <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.min_label" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.min_label" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Max Label</label>
-                    <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.max_label" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <input type="text" x-model.debounce.500ms="selectedQuestion.question_config.max_label" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 </div>
             </div>
         </template>
@@ -87,11 +87,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Number of Icons</label>
-                    <input type="number" x-model.number="selectedQuestion.question_config.count" @input="markDirty" min="1" max="10" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <input type="number" x-model.number="selectedQuestion.question_config.count" @input="markDirty" min="1" max="10" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-neutral-300 mb-1">Icon</label>
-                    <select x-model="selectedQuestion.question_config.icon" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+                    <select x-model="selectedQuestion.question_config.icon" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
                         <option value="star">Star</option>
                         <option value="favorite">Heart</option>
                         <option value="thumb_up">Thumb Up</option>
@@ -99,6 +99,45 @@
                 </div>
             </div>
         </template>
+
+        <template x-if="['multiple_choice_grid', 'checkbox_grid'].includes(selectedQuestion.type)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-300 mb-2">Rows</label>
+                    <div class="space-y-2">
+                        <template x-for="(row, index) in selectedQuestion.grid_rows" :key="row.id || index">
+                            <div class="flex items-center gap-2">
+                                <input type="text" x-model.debounce.500ms="row.label" @input="markDirty" class="flex-grow bg-neutral-800 border-neutral-600 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500" placeholder="Row label">
+                                <button @click="removeGridRow(index)" class="p-2 text-neutral-500 hover:text-red-400 rounded-full hover:bg-red-900/50">
+                                    <span class="material-symbols-outlined text-base">delete</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    <button @click="addGridRow()" class="mt-2 text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">add</span> Add Row
+                    </button>
+                </div>
+        
+                <div>
+                    <label class="block text-sm font-medium text-neutral-300 mb-2">Columns</label>
+                    <div class="space-y-2">
+                        <template x-for="(col, index) in selectedQuestion.grid_columns" :key="col.id || index">
+                            <div class="flex items-center gap-2">
+                                <input type="text" x-model.debounce.500ms="col.label" @input="markDirty" class="flex-grow bg-neutral-800 border-neutral-600 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500" placeholder="Column label">
+                                <button @click="removeGridColumn(index)" class="p-2 text-neutral-500 hover:text-red-400 rounded-full hover:bg-red-900/50">
+                                    <span class="material-symbols-outlined text-base">delete</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    <button @click="addGridColumn()" class="mt-2 text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">add</span> Add Column
+                    </button>
+                </div>
+            </div>
+        </template>
+
     </div>
 </div>
 

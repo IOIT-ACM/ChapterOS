@@ -41,7 +41,6 @@ class Question(models.Model):
         ('linear_scale', 'Linear Scale'),
         ('rating', 'Rating'),
         ('multiple_choice_grid', 'Multiple Choice Grid'),
-        ('checkbox_grid', 'Checkbox Grid'),
         ('date', 'Date'),
         ('time', 'Time'),
     ]

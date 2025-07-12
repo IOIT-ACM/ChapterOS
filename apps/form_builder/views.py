@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from .models import Form, Question, QuestionOption
+from .models import Form, Question, QuestionOption, GridRow, GridColumn
 from .forms import FormCreateForm
 from .serializers import FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer
 from rest_framework import generics, permissions, status
@@ -17,6 +17,10 @@ class IsOwner(permissions.BasePermission):
         if isinstance(obj, Question):
             return obj.form.user == request.user
         if isinstance(obj, QuestionOption):
+            return obj.question.form.user == request.user
+        if isinstance(obj, GridRow):
+            return obj.question.form.user == request.user
+        if isinstance(obj, GridColumn):
             return obj.question.form.user == request.user
         return False
 
@@ -96,7 +100,10 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        
         options_data = request.data.pop('options', None)
+        grid_rows_data = request.data.pop('grid_rows', None)
+        grid_columns_data = request.data.pop('grid_columns', None)
         
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -104,10 +111,27 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
 
         if options_data is not None:
             instance.options.all().delete()
-            for option_data in options_data:
-                QuestionOption.objects.create(question=instance, **option_data)
+            for i, option_data in enumerate(options_data):
+                option_data.pop('id', None) 
+                QuestionOption.objects.create(question=instance, display_order=i, **option_data)
 
-        return Response(FormSchemaSerializer(instance.form).data)
+        if grid_rows_data is not None:
+            instance.grid_rows.all().delete()
+            for i, row_data in enumerate(grid_rows_data):
+                row_data.pop('id', None)
+                GridRow.objects.create(question=instance, display_order=i, **row_data)
+
+        if grid_columns_data is not None:
+            instance.grid_columns.all().delete()
+            for i, col_data in enumerate(grid_columns_data):
+                col_data.pop('id', None)
+                GridColumn.objects.create(question=instance, display_order=i, **col_data)
+
+        updated_form = Form.objects.prefetch_related(
+            'questions__options', 'questions__grid_rows', 'questions__grid_columns'
+        ).get(pk=instance.form.pk)
+        
+        return Response(FormSchemaSerializer(updated_form).data)
 
 
 class QuestionOptionCreateAPIView(generics.CreateAPIView):

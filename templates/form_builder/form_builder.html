@@ -82,7 +82,6 @@ document.addEventListener('alpine:init', () => {
             { value: 'linear_scale', name: 'Linear Scale' },
             { value: 'rating', name: 'Rating' },
             { value: 'multiple_choice_grid', name: 'Multiple Choice Grid' },
-            { value: 'checkbox_grid', name: 'Checkbox Grid' },
             { value: 'date', name: 'Date' },
             { value: 'time', name: 'Time' },
         ],
@@ -117,6 +116,8 @@ document.addEventListener('alpine:init', () => {
             this.selectedQuestion = JSON.parse(JSON.stringify(question));
             if (!this.selectedQuestion.question_config) this.selectedQuestion.question_config = {};
             if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
+            if (!this.selectedQuestion.grid_rows) this.selectedQuestion.grid_rows = [];
+            if (!this.selectedQuestion.grid_columns) this.selectedQuestion.grid_columns = [];
             this.isDirty = false;
         },
 
@@ -131,11 +132,17 @@ document.addEventListener('alpine:init', () => {
         async refreshForm() {
             const response = await this.apiCall(this.apiUrls.schema);
             if (response.ok) {
-                this.form = await response.json();
-                this.form.questions.sort((a, b) => a.display_order - b.display_order);
+                const newForm = await response.json();
+                newForm.questions.sort((a, b) => a.display_order - b.display_order);
+                this.form = newForm;
+                
                 if (this.selectedQuestion) {
                     const updated = this.form.questions.find(q => q.id === this.selectedQuestion.id);
-                    this.selectedQuestion = updated ? JSON.parse(JSON.stringify(updated)) : null;
+                    if (updated) {
+                        this.selectQuestion(updated);
+                    } else {
+                        this.selectedQuestion = null;
+                    }
                 }
             }
         },
@@ -174,7 +181,11 @@ document.addEventListener('alpine:init', () => {
             const response = await this.apiCall(url, 'PUT', this.selectedQuestion);
             if (response.ok) {
                 this.isDirty = false;
-                await this.refreshForm();
+                const newForm = await response.json();
+                newForm.questions.sort((a, b) => a.display_order - b.display_order);
+                this.form = newForm;
+                const updated = this.form.questions.find(q => q.id === this.selectedQuestion.id);
+                this.selectedQuestion = updated ? JSON.parse(JSON.stringify(updated)) : null;
             } else {
                 alert('Failed to save question: ' + JSON.stringify(await response.json()));
             }
@@ -190,7 +201,8 @@ document.addEventListener('alpine:init', () => {
             const url = `${this.apiUrls.questions}${id}/`;
             const response = await this.apiCall(url, 'DELETE');
             if (response.ok) {
-                this.unselectQuestion();
+                this.selectedQuestion = null;
+                this.isDirty = false;
                 await this.refreshForm();
             } else {
                 alert(`Failed to delete question.`);
@@ -206,6 +218,28 @@ document.addEventListener('alpine:init', () => {
 
         removeOption(index) {
             this.selectedQuestion.options.splice(index, 1);
+            this.markDirty();
+        },
+
+        addGridRow() {
+            if (!this.selectedQuestion.grid_rows) this.selectedQuestion.grid_rows = [];
+            this.selectedQuestion.grid_rows.push({ label: `Row ${this.selectedQuestion.grid_rows.length + 1}`, value: '' });
+            this.markDirty();
+        },
+
+        removeGridRow(index) {
+            this.selectedQuestion.grid_rows.splice(index, 1);
+            this.markDirty();
+        },
+
+        addGridColumn() {
+            if (!this.selectedQuestion.grid_columns) this.selectedQuestion.grid_columns = [];
+            this.selectedQuestion.grid_columns.push({ label: `Column ${this.selectedQuestion.grid_columns.length + 1}`, value: '' });
+            this.markDirty();
+        },
+
+        removeGridColumn(index) {
+            this.selectedQuestion.grid_columns.splice(index, 1);
             this.markDirty();
         },
 
