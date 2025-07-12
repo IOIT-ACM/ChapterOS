@@ -4,8 +4,12 @@
 {% block title %}Build: {{ form.title }}{% endblock %}
 
 {% block content %}
-<div x-data="formBuilder()" x-init="init()" class="flex h-full w-full bg-neutral-900 flex-1">
-    <main class="flex-1 bg-black flex flex-col overflow-hidden">
+<div x-data="formBuilder()" x-init="init()" 
+     @mousemove.window="doResize($event)" 
+     @mouseup.window="stopResize()"
+     class="flex h-full w-full bg-neutral-900 flex-1 overflow-hidden">
+
+    <main class="flex-1 bg-black flex flex-col overflow-hidden min-w-0">
         <div class="flex items-center justify-between p-4 border-b border-neutral-800 flex-shrink-0">
             <div>
                 <a href="{% url 'form_builder:form_list' %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
@@ -46,7 +50,9 @@
         </div>
     </main>
 
-    <aside id="right-panel" class="w-[420px] flex-shrink-0 bg-neutral-950 border-l border-neutral-800 flex flex-col">
+    <div @mousedown.prevent="startResize()" class="w-1.5 flex-shrink-0 cursor-col-resize bg-neutral-800 hover:bg-orange-600 transition-colors"></div>
+
+    <aside id="right-panel" class="flex-shrink-0 bg-neutral-950 border-l border-neutral-800 flex flex-col" :style="`width: ${rightPanelWidth}px`">
         <div x-show="!selectedQuestion" class="flex flex-col items-center justify-center h-full text-center text-neutral-600 p-4">
             <span class="material-symbols-outlined text-6xl">edit_note</span>
             <h3 class="mt-4 font-semibold text-neutral-400">Question Editor</h3>
@@ -73,6 +79,11 @@ document.addEventListener('alpine:init', () => {
         showEditFormModal: false,
         showDeleteModal: { open: false, type: '', id: null },
         
+        isResizing: false,
+        rightPanelWidth: 420,
+        minPanelWidth: 320,
+        maxPanelWidth: 800,
+
         questionTypes: [
             { value: 'short_answer', name: 'Short Answer' },
             { value: 'paragraph', name: 'Paragraph' },
@@ -94,6 +105,22 @@ document.addEventListener('alpine:init', () => {
         init() {
             this.form = JSON.parse(document.getElementById('form-schema-data').textContent);
             this.form.questions.sort((a, b) => a.display_order - b.display_order);
+        },
+
+        startResize() {
+            this.isResizing = true;
+        },
+
+        doResize(event) {
+            if (!this.isResizing) return;
+            const newWidth = window.innerWidth - event.clientX;
+            if (newWidth >= this.minPanelWidth && newWidth <= this.maxPanelWidth) {
+                this.rightPanelWidth = newWidth;
+            }
+        },
+
+        stopResize() {
+            this.isResizing = false;
         },
 
         getQuestionTypeName(value) {

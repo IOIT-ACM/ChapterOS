@@ -1,10 +1,15 @@
-{% extends "form_builder/base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Create New Form{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-neutral-900 p-8 rounded-lg shadow-lg border border-neutral-700">
-    <h1 class="text-2xl font-bold text-white mb-6">Create a New Form</h1>
+
+<div class="max-w-3xl px-4 sm:px-6 lg:px-8 py-8 create-form">
+    <div class="mb-10">
+        <h1 class="text-3xl font-bold text-white">Create a New Form</h1>
+        <p class="mt-2 text-neutral-400">Start by giving your form a title and an optional description. You'll add questions in the next step.</p>
+    </div>
+
     <form method="post" class="space-y-6">
         {% csrf_token %}
         <div class="relative z-0 w-full group">
@@ -32,5 +37,18 @@
             </button>
         </div>
     </form>
+
+    <div class="mt-12 pt-8 border-t border-neutral-800">
+        <h2 class="text-lg font-semibold text-white">What's Next?</h2>
+        <p class="mt-2 text-neutral-400 text-sm">
+            After you click "Create and Build Form", you'll be taken to the form builder. There, you can:
+        </p>
+        <ul class="mt-4 space-y-2 list-disc list-inside text-neutral-400 text-sm">
+            <li>Add a variety of question types, from short answer to complex grids.</li>
+            <li>Drag and drop to reorder questions.</li>
+            <li>Set questions as required.</li>
+            <li>Configure specific options for each question type.</li>
+        </ul>
+    </div>
 </div>
 {% endblock %}
