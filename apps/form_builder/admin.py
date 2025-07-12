@@ -32,17 +32,17 @@ class QuestionInline(admin.StackedInline):
     inlines = [QuestionOptionInline, GridRowInline, GridColumnInline]
 
     def has_add_permission(self, request, obj=None):
-        if obj and obj.is_approved:
+        if not request.user.is_superuser and obj and obj.is_approved:
             return False
         return super().has_add_permission(request, obj)
 
     def has_change_permission(self, request, obj=None):
-        if obj and obj.is_approved:
+        if not request.user.is_superuser and obj and obj.is_approved:
             return False
         return super().has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        if obj and obj.is_approved:
+        if not request.user.is_superuser and obj and obj.is_approved:
             return False
         return super().has_delete_permission(request, obj)
 
@@ -73,17 +73,23 @@ class FormAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        
-        if obj and obj.is_approved:
-            # If form is approved, make all fields read-only.
-            return [f.name for f in self.model._meta.fields if f.name != 'id']
 
-        is_chair = request.user.groups.filter(name='Chair').exists()
-        
-        if not request.user.is_superuser and not is_chair:
+        if request.user.is_superuser:
+            return readonly_fields
+
+        if obj and obj.is_approved:
+            return [f.name for f in self.model._meta.fields if f.name != 'id']
+        else:
             return list(readonly_fields) + ['is_approved']
-        
-        return readonly_fields
+
+    def get_prepopulated_fields(self, request, obj=None):
+        """
+        This is still needed for the non-superuser case where fields become readonly.
+        It prevents the KeyError. For superusers, this check will be false.
+        """
+        if not request.user.is_superuser and obj and obj.is_approved:
+            return {}
+        return self.prepopulated_fields
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
@@ -93,17 +99,17 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline, GridRowInline, GridColumnInline, QuestionConditionInline]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and obj.form.is_approved:
+        if not request.user.is_superuser and obj and obj.form.is_approved:
             return [f.name for f in self.model._meta.fields]
         return super().get_readonly_fields(request, obj)
 
     def has_change_permission(self, request, obj=None):
-        if obj and obj.form.is_approved:
+        if not request.user.is_superuser and obj and obj.form.is_approved:
             return False
         return super().has_change_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        if obj and obj.form.is_approved:
+        if not request.user.is_superuser and obj and obj.form.is_approved:
             return False
         return super().has_delete_permission(request, obj)
 
