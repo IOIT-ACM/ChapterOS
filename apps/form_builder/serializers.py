@@ -35,6 +35,40 @@ class QuestionSerializer(serializers.ModelSerializer):
             'options', 'grid_rows', 'grid_columns', 'conditions'
         ]
 
+    def validate(self, data):
+        identifier = data.get('identifier')
+        if not identifier:
+            return data
+
+        if self.instance:
+            form = self.instance.form
+        else:
+            request = self.context.get('request')
+            if not request:
+                return super().validate(data)
+            
+            form_id = request.data.get('form')
+            if not form_id:
+                raise serializers.ValidationError({'form': 'Form ID is required.'})
+            
+            try:
+                form = Form.objects.get(pk=form_id)
+                if form.user != request.user:
+                    raise serializers.ValidationError("Permission denied for this form.")
+            except Form.DoesNotExist:
+                raise serializers.ValidationError({'form': 'Invalid form specified.'})
+
+        queryset = Question.objects.filter(form=form, identifier__iexact=identifier)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
+            raise serializers.ValidationError({
+                'identifier': f'The identifier "{identifier}" is already in use on this form. Please choose a unique one.'
+            })
+
+        return data
+
 class FormSchemaSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
     user = serializers.StringRelatedField()
@@ -44,4 +78,75 @@ class FormSchemaSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'slug', 'user', 'is_active',
             'deadline', 'confirmation_message', 'questions'
+        ]
+
+
+class PublicQuestionOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuestionOption
+        fields = ['label', 'value', 'is_other_option']
+
+class PublicGridRowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GridRow
+        fields = ['label', 'value']
+
+class PublicGridColumnSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GridColumn
+        fields = ['label', 'value']
+
+class PublicQuestionConditionSerializer(serializers.ModelSerializer):
+    depends_on_question = serializers.SlugRelatedField(
+        slug_field='identifier',
+        read_only=True
+    )
+
+    class Meta:
+        model = QuestionCondition
+        fields = ['depends_on_question', 'trigger_value', 'condition_type']
+
+class PublicQuestionSerializer(serializers.ModelSerializer):
+    options = PublicQuestionOptionSerializer(many=True, read_only=True)
+    grid_rows = PublicGridRowSerializer(many=True, read_only=True)
+    grid_columns = PublicGridColumnSerializer(many=True, read_only=True)
+    conditions = PublicQuestionConditionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = [
+            'identifier', 'type', 'question_text', 'description_text',
+            'is_required', 'validation_rules', 'question_config',
+            'options', 'grid_rows', 'grid_columns', 'conditions'
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        question_type = instance.type
+
+        if question_type not in ['multiple_choice', 'checkboxes', 'dropdown']:
+            data.pop('options', None)
+
+        if question_type not in ['multiple_choice_grid', 'checkbox_grid']:
+            data.pop('grid_rows', None)
+            data.pop('grid_columns', None)
+        
+        if not data.get('description_text'):
+            data.pop('description_text', None)
+        if not data.get('validation_rules'):
+            data.pop('validation_rules', None)
+        if not data.get('question_config'):
+            data.pop('question_config', None)
+        if not data.get('conditions'):
+            data.pop('conditions', None)
+
+        return data
+
+class PublicFormSerializer(serializers.ModelSerializer):
+    questions = PublicQuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Form
+        fields = [
+            'title', 'description', 'deadline', 'confirmation_message', 'questions'
         ]

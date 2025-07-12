@@ -53,8 +53,8 @@ erDiagram
         int id PK "Primary key - unique identifier for each condition"
         int question_id FK "Foreign key - the question that will be shown/hidden based on this condition"
         int depends_on_question_id FK "Foreign key - the question whose answer determines if the target question is shown"
-        string trigger_value "The answer value that triggers showing the question (JSON array for multiple trigger values)"
-        string condition_type "Type of condition: 'show_if', 'hide_if', 'go_to_section'"
+        json trigger_value "The answer value that triggers showing the question (JSON array for multiple trigger values)"
+        string condition_type "Type of condition: 'show_if', 'hide_if'"
     }
 
     submissions {
@@ -76,7 +76,7 @@ erDiagram
         int id PK "Primary key - unique identifier for each grid answer"
         int answer_id FK "Foreign key - references the parent answer record"
         int grid_row_id FK "Foreign key - references the grid row"
-        int grid_column_id FK "Foreign key - references the grid column (for single choice)"
+        int grid_column_id FK "Foreign key - references the grid column"
     }
 
     %% Relationships

@@ -31,7 +31,7 @@
                     <p class="text-sm">Click "Add Question" to get started.</p>
                 </div>
             </template>
-            <template x-for="(question, index) in form.questions" :key="question.id || index">
+            <template x-for="(question, index) in form.questions" :key="question.id">
                 <div @click="selectQuestion(question)"
                      class="p-4 rounded-lg border cursor-pointer transition-colors"
                      :class="{
@@ -80,7 +80,7 @@ document.addEventListener('alpine:init', () => {
         showDeleteModal: { open: false, type: '', id: null },
         
         isResizing: false,
-        rightPanelWidth: 420,
+        rightPanelWidth: 450,
         minPanelWidth: 320,
         maxPanelWidth: 800,
 
@@ -103,24 +103,23 @@ document.addEventListener('alpine:init', () => {
         },
         
         init() {
-            this.form = JSON.parse(document.getElementById('form-schema-data').textContent);
-            this.form.questions.sort((a, b) => a.display_order - b.display_order);
+            const schemaData = JSON.parse(document.getElementById('form-schema-data').textContent);
+            this._updateFormState(schemaData);
         },
 
-        startResize() {
-            this.isResizing = true;
+        _updateFormState(newFormSchema) {
+            newFormSchema.questions.sort((a, b) => a.display_order - b.display_order);
+            this.form = newFormSchema;
         },
 
+        startResize() { this.isResizing = true; },
+        stopResize() { this.isResizing = false; },
         doResize(event) {
             if (!this.isResizing) return;
             const newWidth = window.innerWidth - event.clientX;
             if (newWidth >= this.minPanelWidth && newWidth <= this.maxPanelWidth) {
                 this.rightPanelWidth = newWidth;
             }
-        },
-
-        stopResize() {
-            this.isResizing = false;
         },
 
         getQuestionTypeName(value) {
@@ -132,14 +131,12 @@ document.addEventListener('alpine:init', () => {
             return this.selectedQuestion && this.selectedQuestion.id === question.id;
         },
 
-        markDirty() {
-            this.isDirty = true;
-        },
+        markDirty() { this.isDirty = true; },
 
         selectQuestion(question) {
-            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) {
-                return;
-            }
+            if (this.selectedQuestion && this.selectedQuestion.id === question.id) return;
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) return;
+            
             this.selectedQuestion = JSON.parse(JSON.stringify(question));
             if (!this.selectedQuestion.question_config) this.selectedQuestion.question_config = {};
             if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
@@ -150,29 +147,9 @@ document.addEventListener('alpine:init', () => {
         },
 
         unselectQuestion() {
-            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) {
-                return;
-            }
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) return;
             this.selectedQuestion = null;
             this.isDirty = false;
-        },
-
-        async refreshForm() {
-            const response = await this.apiCall(this.apiUrls.schema);
-            if (response.ok) {
-                const newForm = await response.json();
-                newForm.questions.sort((a, b) => a.display_order - b.display_order);
-                this.form = newForm;
-                
-                if (this.selectedQuestion) {
-                    const updated = this.form.questions.find(q => q.id === this.selectedQuestion.id);
-                    if (updated) {
-                        this.selectQuestion(updated);
-                    } else {
-                        this.selectedQuestion = null;
-                    }
-                }
-            }
         },
 
         apiCall(url, method = 'GET', body = null) {
@@ -195,9 +172,13 @@ document.addEventListener('alpine:init', () => {
             const response = await this.apiCall(this.apiUrls.questions, 'POST', payload);
             if (response.ok) {
                 const newQuestion = await response.json();
-                await this.refreshForm();
-                const toSelect = this.form.questions.find(q => q.id === newQuestion.id);
-                if (toSelect) this.selectQuestion(toSelect);
+                const refreshResponse = await this.apiCall(this.apiUrls.schema);
+                if (refreshResponse.ok) {
+                    const newFormSchema = await refreshResponse.json();
+                    this._updateFormState(newFormSchema);
+                    const toSelect = this.form.questions.find(q => q.id === newQuestion.id);
+                    if (toSelect) this.selectQuestion(toSelect);
+                }
             } else {
                 alert('Failed to add new question.');
             }
@@ -205,17 +186,39 @@ document.addEventListener('alpine:init', () => {
 
         async saveQuestion() {
             if (!this.selectedQuestion || !this.isDirty) return;
+
+            const newIdentifier = this.selectedQuestion.identifier;
+            if (newIdentifier) {
+                const isDuplicate = this.form.questions.some(q => 
+                    q.id !== this.selectedQuestion.id && q.identifier.toLowerCase() === newIdentifier.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                    alert(`The identifier "${newIdentifier}" is already in use on this form. Please choose a unique identifier.`);
+                    return;
+                }
+            }
+
             const url = `${this.apiUrls.questions}${this.selectedQuestion.id}/`;
             const response = await this.apiCall(url, 'PUT', this.selectedQuestion);
             if (response.ok) {
                 this.isDirty = false;
-                const newForm = await response.json();
-                newForm.questions.sort((a, b) => a.display_order - b.display_order);
-                this.form = newForm;
-                const updated = this.form.questions.find(q => q.id === this.selectedQuestion.id);
-                this.selectedQuestion = updated ? JSON.parse(JSON.stringify(updated)) : null;
+                const updatedFormSchema = await response.json();
+                const previouslySelectedId = this.selectedQuestion.id;
+                this._updateFormState(updatedFormSchema);
+                const toSelect = this.form.questions.find(q => q.id === previouslySelectedId);
+                if (toSelect) {
+                    this.selectQuestion(toSelect);
+                } else {
+                    this.unselectQuestion();
+                }
             } else {
-                alert('Failed to save question: ' + JSON.stringify(await response.json()));
+                const errorData = await response.json();
+                if (errorData.identifier) {
+                    alert('Failed to save question: ' + errorData.identifier.join(' '));
+                } else {
+                    alert('Failed to save question: ' + JSON.stringify(errorData));
+                }
             }
         },
 
@@ -229,9 +232,12 @@ document.addEventListener('alpine:init', () => {
             const url = `${this.apiUrls.questions}${id}/`;
             const response = await this.apiCall(url, 'DELETE');
             if (response.ok) {
-                this.selectedQuestion = null;
-                this.isDirty = false;
-                await this.refreshForm();
+                this.unselectQuestion();
+                const refreshResponse = await this.apiCall(this.apiUrls.schema);
+                if (refreshResponse.ok) {
+                    const newFormSchema = await refreshResponse.json();
+                    this._updateFormState(newFormSchema);
+                }
             } else {
                 alert(`Failed to delete question.`);
             }
@@ -239,33 +245,25 @@ document.addEventListener('alpine:init', () => {
         },
 
         addOption() {
-            if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
             this.selectedQuestion.options.push({ label: `Option ${this.selectedQuestion.options.length + 1}`, value: '' });
             this.markDirty();
         },
-
         removeOption(index) {
             this.selectedQuestion.options.splice(index, 1);
             this.markDirty();
         },
-
         addGridRow() {
-            if (!this.selectedQuestion.grid_rows) this.selectedQuestion.grid_rows = [];
             this.selectedQuestion.grid_rows.push({ label: `Row ${this.selectedQuestion.grid_rows.length + 1}`, value: '' });
             this.markDirty();
         },
-
         removeGridRow(index) {
             this.selectedQuestion.grid_rows.splice(index, 1);
             this.markDirty();
         },
-
         addGridColumn() {
-            if (!this.selectedQuestion.grid_columns) this.selectedQuestion.grid_columns = [];
             this.selectedQuestion.grid_columns.push({ label: `Column ${this.selectedQuestion.grid_columns.length + 1}`, value: '' });
             this.markDirty();
         },
-
         removeGridColumn(index) {
             this.selectedQuestion.grid_columns.splice(index, 1);
             this.markDirty();
@@ -274,26 +272,20 @@ document.addEventListener('alpine:init', () => {
         dependableQuestions() {
             if (!this.selectedQuestion) return [];
             const currentIndex = this.form.questions.findIndex(q => q.id === this.selectedQuestion.id);
-            if (currentIndex === -1) return [];
-            return this.form.questions.filter((q, index) => q.id !== this.selectedQuestion.id && index < currentIndex);
+            if (currentIndex === -1) return this.form.questions.filter(q => q.id);
+            return this.form.questions.filter((q, index) => index < currentIndex);
         },
-
         getDependentQuestionType(questionId) {
             if (!questionId) return null;
             const question = this.form.questions.find(q => q.id == questionId);
             return question ? question.type : null;
         },
-
         getTriggerOptions(questionId) {
             if (!questionId) return [];
             const question = this.form.questions.find(q => q.id == questionId);
-            return question ? question.options : [];
+            return question && question.options ? question.options : [];
         },
-
         addCondition() {
-            if (!this.selectedQuestion.conditions) {
-                this.selectedQuestion.conditions = [];
-            }
             this.selectedQuestion.conditions.push({
                 condition_type: 'show_if',
                 depends_on_question: '',
@@ -301,7 +293,6 @@ document.addEventListener('alpine:init', () => {
             });
             this.markDirty();
         },
-
         removeCondition(index) {
             this.selectedQuestion.conditions.splice(index, 1);
             this.markDirty();

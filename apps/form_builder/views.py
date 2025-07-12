@@ -6,7 +6,10 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm
-from .serializers import FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer
+from .serializers import (
+    FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer,
+    PublicFormSerializer
+)
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
@@ -81,11 +84,35 @@ def form_builder_view(request, slug):
 
 class FormSchemaAPIView(generics.RetrieveAPIView):
     queryset = Form.objects.prefetch_related(
-        'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions'
+        'questions__options', 'questions__grid_rows', 'questions__grid_columns',
+        'questions__conditions__depends_on_question'
     ).all()
     serializer_class = FormSchemaSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    lookup_field = 'slug'
+
+class PublicFormSchemaAPIView(generics.RetrieveAPIView):
+    queryset = Form.objects.prefetch_related(
+        'questions__options', 'questions__grid_rows', 'questions__grid_columns',
+        'questions__conditions__depends_on_question'
+    ).all()
+    serializer_class = PublicFormSerializer
     permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if not instance.is_active:
+            data = {
+                'title': instance.title,
+                'description': instance.description,
+                'message': "This form is currently not accepting responses."
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 class QuestionCreateAPIView(generics.CreateAPIView):
     serializer_class = QuestionSerializer
@@ -115,19 +142,22 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
         if options_data is not None:
             instance.options.all().delete()
             for i, option_data in enumerate(options_data):
-                option_data.pop('id', None) 
+                option_data.pop('id', None)
+                option_data.pop('display_order', None)
                 QuestionOption.objects.create(question=instance, display_order=i, **option_data)
 
         if grid_rows_data is not None:
             instance.grid_rows.all().delete()
             for i, row_data in enumerate(grid_rows_data):
                 row_data.pop('id', None)
+                row_data.pop('display_order', None)
                 GridRow.objects.create(question=instance, display_order=i, **row_data)
 
         if grid_columns_data is not None:
             instance.grid_columns.all().delete()
             for i, col_data in enumerate(grid_columns_data):
                 col_data.pop('id', None)
+                col_data.pop('display_order', None)
                 GridColumn.objects.create(question=instance, display_order=i, **col_data)
 
         if conditions_data is not None:
@@ -149,7 +179,7 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
                     pass
 
         updated_form = Form.objects.prefetch_related(
-            'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions'
+            'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions__depends_on_question'
         ).get(pk=instance.form.pk)
         
         return Response(FormSchemaSerializer(updated_form).data)

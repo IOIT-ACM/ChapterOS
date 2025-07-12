@@ -12,6 +12,12 @@
     </div>
 
     <div>
+        <label for="question_identifier" class="block text-sm font-medium text-neutral-300 mb-1">Identifier</label>
+        <input type="text" id="question_identifier" x-model.debounce.500ms="selectedQuestion.identifier" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
+        <p class="text-xs text-neutral-500 mt-1">A unique ID for this question. Auto-generated if blank.</p>
+    </div>
+
+    <div>
         <label for="description_text" class="block text-sm font-medium text-neutral-300 mb-1">Description (Optional)</label>
         <textarea id="description_text" x-model.debounce.500ms="selectedQuestion.description_text" @input="markDirty" rows="2" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
     </div>
@@ -187,7 +193,7 @@
                 </div>
             </template>
 
-            <button @click="addCondition()" class="text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1">
+            <button @click="addCondition()" :disabled="dependableQuestions().length === 0" class="text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1 disabled:text-neutral-500 disabled:cursor-not-allowed">
                 <span class="material-symbols-outlined text-base">add</span> Add Condition
             </button>
         </div>
