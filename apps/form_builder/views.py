@@ -7,7 +7,8 @@ from django.contrib import messages
 from .models import Form, Question, QuestionOption
 from .forms import FormCreateForm
 from .serializers import FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
 
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -25,7 +26,7 @@ class FormListView(LoginRequiredMixin, ListView):
     context_object_name = 'forms'
 
     def get_queryset(self):
-        return Form.objects.filter(user=self.request.user)
+        return Form.objects.filter(user=self.request.user).prefetch_related('questions', 'submissions')
 
 class FormCreateView(LoginRequiredMixin, CreateView):
     model = Form
@@ -92,6 +93,22 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwner]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        options_data = request.data.pop('options', None)
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if options_data is not None:
+            instance.options.all().delete()
+            for option_data in options_data:
+                QuestionOption.objects.create(question=instance, **option_data)
+
+        return Response(FormSchemaSerializer(instance.form).data)
+
 
 class QuestionOptionCreateAPIView(generics.CreateAPIView):
     serializer_class = QuestionOptionSerializer

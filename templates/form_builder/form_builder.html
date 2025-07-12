@@ -1,58 +1,65 @@
-{% extends "base.html" %}
+{% extends "form_builder/base.html" %}
 {% load static %}
 
 {% block title %}Build: {{ form.title }}{% endblock %}
 
 {% block content %}
-<div x-data="formBuilder()" x-init="init()">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-            <a href="{% url 'form_builder:form_list' %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
-                <span class="material-symbols-outlined text-base">arrow_back</span>
-                Back to All Forms
-            </a>
-            <h1 class="text-3xl font-bold text-white" x-text="form.title"></h1>
-            <p class="text-neutral-400 mt-1" x-text="form.description"></p>
-        </div>
-        <div class="flex items-center gap-2">
-            <button @click="showApiModal = true" class="px-4 py-2 bg-neutral-800 text-neutral-300 text-sm font-semibold rounded-lg hover:bg-neutral-700 transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-base">api</span>
-                Get Schema
-            </button>
-            <button @click="showEditFormModal = true" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-base">edit</span>
-                Edit Details
+<div x-data="formBuilder()" x-init="init()" class="flex h-full w-full bg-neutral-900 flex-1">
+    <main class="flex-1 bg-black flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-4 border-b border-neutral-800 flex-shrink-0">
+            <div>
+                <a href="{% url 'form_builder:form_list' %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Back to All Forms
+                </a>
+                <h2 class="text-xl font-bold text-white" x-text="form.title"></h2>
+            </div>
+            <button @click="addQuestion()" class="flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">add</span>
+                <span>Add Question</span>
             </button>
         </div>
-    </div>
-
-    <div class="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4">
-        <div id="questions-container" class="space-y-4">
-            <template x-for="(question, questionIndex) in form.questions" :key="question.id">
-                <div class="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+        <div id="questions-list-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <template x-if="form.questions.length === 0">
+                <div class="text-center py-12 text-neutral-500">
+                    <span class="material-symbols-outlined text-6xl">quiz</span>
+                    <h3 class="mt-4 font-semibold text-neutral-400">No Questions Yet</h3>
+                    <p class="text-sm">Click "Add Question" to get started.</p>
+                </div>
+            </template>
+            <template x-for="(question, index) in form.questions" :key="question.id || index">
+                <div @click="selectQuestion(question)"
+                     class="p-4 rounded-lg border cursor-pointer transition-colors"
+                     :class="{
+                         'bg-neutral-800/50 border-neutral-700 hover:bg-neutral-700/50': !isSelected(question),
+                         'bg-orange-900/30 border-orange-700 ring-2 ring-orange-600': isSelected(question)
+                     }">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="font-semibold text-neutral-300" x-text="question.question_text"></p>
-                            <span class="text-xs text-neutral-500" x-text="`${question.type} ${question.is_required ? '(Required)' : ''}`"></span>
+                            <p class="font-semibold text-white" x-text="`${index + 1}. ${question.question_text || 'New Question'}`"></p>
+                            <span class="text-xs text-neutral-400" x-text="`${getQuestionTypeName(question.type)} ${question.is_required ? '• Required' : ''}`"></span>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button @click="editQuestion(question)" class="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded-full transition-colors"><span class="material-symbols-outlined text-base">edit</span></button>
-                            <button @click="deleteQuestion(question.id)" class="p-2 text-neutral-400 hover:text-red-400 hover:bg-red-900/50 rounded-full transition-colors"><span class="material-symbols-outlined text-base">delete</span></button>
-                        </div>
+                        <span class="material-symbols-outlined text-neutral-500">drag_indicator</span>
                     </div>
                 </div>
             </template>
         </div>
+    </main>
 
-        <button @click="addQuestion()" class="w-full mt-4 px-4 py-2 bg-neutral-800 text-neutral-300 text-sm font-semibold rounded-lg hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-base">add</span>
-            Add Question
-        </button>
-    </div>
-
-    {% include "form_builder/_modals.html" %}
+    <aside id="right-panel" class="w-[420px] flex-shrink-0 bg-neutral-950 border-l border-neutral-800 flex flex-col">
+        <div x-show="!selectedQuestion" class="flex flex-col items-center justify-center h-full text-center text-neutral-600 p-4">
+            <span class="material-symbols-outlined text-6xl">edit_note</span>
+            <h3 class="mt-4 font-semibold text-neutral-400">Question Editor</h3>
+            <p class="text-sm">Select a question to edit its details, or add a new one.</p>
+        </div>
+        
+        <div x-show="selectedQuestion" x-cloak class="flex flex-col h-full">
+            {% include "form_builder/_question_editor.html" %}
+        </div>
+    </aside>
 </div>
 
+{% include "form_builder/_modals.html" %}
 {{ form_schema_json|json_script:"form-schema-data" }}
 {% csrf_token %}
 
@@ -60,13 +67,26 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('formBuilder', () => ({
         form: {},
+        selectedQuestion: null,
+        isDirty: false,
         showApiModal: false,
         showEditFormModal: false,
-        showQuestionModal: false,
         showDeleteModal: { open: false, type: '', id: null },
         
-        currentQuestion: {},
-        
+        questionTypes: [
+            { value: 'short_answer', name: 'Short Answer' },
+            { value: 'paragraph', name: 'Paragraph' },
+            { value: 'multiple_choice', name: 'Multiple Choice' },
+            { value: 'checkboxes', name: 'Checkboxes' },
+            { value: 'dropdown', name: 'Dropdown' },
+            { value: 'linear_scale', name: 'Linear Scale' },
+            { value: 'rating', name: 'Rating' },
+            { value: 'multiple_choice_grid', name: 'Multiple Choice Grid' },
+            { value: 'checkbox_grid', name: 'Checkbox Grid' },
+            { value: 'date', name: 'Date' },
+            { value: 'time', name: 'Time' },
+        ],
+
         apiUrls: {
             schema: `/form_builder/api/forms/{{ form.slug }}/schema/`,
             questions: '/form_builder/api/questions/',
@@ -74,25 +94,49 @@ document.addEventListener('alpine:init', () => {
         
         init() {
             this.form = JSON.parse(document.getElementById('form-schema-data').textContent);
-            this.resetCurrentQuestion();
+            this.form.questions.sort((a, b) => a.display_order - b.display_order);
         },
 
-        resetCurrentQuestion() {
-            this.currentQuestion = { 
-                id: null, 
-                question_text: '', 
-                type: 'short_answer', 
-                is_required: false, 
-                form: this.form.id,
-                question_config: {},
-                validation_rules: {}
-            };
+        getQuestionTypeName(value) {
+            const type = this.questionTypes.find(t => t.value === value);
+            return type ? type.name : 'Unknown';
+        },
+
+        isSelected(question) {
+            return this.selectedQuestion && this.selectedQuestion.id === question.id;
+        },
+
+        markDirty() {
+            this.isDirty = true;
+        },
+
+        selectQuestion(question) {
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) {
+                return;
+            }
+            this.selectedQuestion = JSON.parse(JSON.stringify(question));
+            if (!this.selectedQuestion.question_config) this.selectedQuestion.question_config = {};
+            if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
+            this.isDirty = false;
+        },
+
+        unselectQuestion() {
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) {
+                return;
+            }
+            this.selectedQuestion = null;
+            this.isDirty = false;
         },
 
         async refreshForm() {
             const response = await this.apiCall(this.apiUrls.schema);
             if (response.ok) {
                 this.form = await response.json();
+                this.form.questions.sort((a, b) => a.display_order - b.display_order);
+                if (this.selectedQuestion) {
+                    const updated = this.form.questions.find(q => q.id === this.selectedQuestion.id);
+                    this.selectedQuestion = updated ? JSON.parse(JSON.stringify(updated)) : null;
+                }
             }
         },
 
@@ -102,58 +146,67 @@ document.addEventListener('alpine:init', () => {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             };
             const config = { method, headers };
-            if (body) {
-                config.body = JSON.stringify(body);
-            }
+            if (body) config.body = JSON.stringify(body);
             return fetch(url, config);
         },
 
-        addQuestion() {
-            this.resetCurrentQuestion();
-            this.showQuestionModal = true;
-        },
-
-        editQuestion(question) {
-            this.currentQuestion = JSON.parse(JSON.stringify(question));
-            if (!this.currentQuestion.question_config) this.currentQuestion.question_config = {};
-            if (!this.currentQuestion.validation_rules) this.currentQuestion.validation_rules = {};
-            this.showQuestionModal = true;
+        async addQuestion() {
+            const payload = {
+                form: this.form.id,
+                question_text: 'Untitled Question',
+                type: 'short_answer',
+                display_order: this.form.questions.length,
+            };
+            const response = await this.apiCall(this.apiUrls.questions, 'POST', payload);
+            if (response.ok) {
+                const newQuestion = await response.json();
+                await this.refreshForm();
+                const toSelect = this.form.questions.find(q => q.id === newQuestion.id);
+                if (toSelect) this.selectQuestion(toSelect);
+            } else {
+                alert('Failed to add new question.');
+            }
         },
 
         async saveQuestion() {
-            const url = this.currentQuestion.id ? `${this.apiUrls.questions}${this.currentQuestion.id}/` : `${this.apiUrls.questions}`;
-            const method = this.currentQuestion.id ? 'PUT' : 'POST';
-            
-            const payload = { ...this.currentQuestion, form: this.form.id };
-
-            const response = await this.apiCall(url, method, payload);
+            if (!this.selectedQuestion || !this.isDirty) return;
+            const url = `${this.apiUrls.questions}${this.selectedQuestion.id}/`;
+            const response = await this.apiCall(url, 'PUT', this.selectedQuestion);
             if (response.ok) {
-                this.showQuestionModal = false;
+                this.isDirty = false;
                 await this.refreshForm();
             } else {
-                const errorData = await response.json();
-                alert('Failed to save question: ' + JSON.stringify(errorData));
+                alert('Failed to save question: ' + JSON.stringify(await response.json()));
             }
         },
 
-        deleteQuestion(id) {
+        confirmDeleteQuestion(id) {
             this.showDeleteModal = { open: true, type: 'Question', id: id };
         },
 
-        async confirmDelete() {
-            const { type, id } = this.showDeleteModal;
-            let url = '';
-            if (type === 'Question') url = `${this.apiUrls.questions}${id}/`;
-            
-            if (url) {
-                const response = await this.apiCall(url, 'DELETE');
-                if (response.ok) {
-                    await this.refreshForm();
-                } else {
-                    alert(`Failed to delete ${type}.`);
-                }
+        async deleteQuestion() {
+            const id = this.showDeleteModal.id;
+            if (!id) return;
+            const url = `${this.apiUrls.questions}${id}/`;
+            const response = await this.apiCall(url, 'DELETE');
+            if (response.ok) {
+                this.unselectQuestion();
+                await this.refreshForm();
+            } else {
+                alert(`Failed to delete question.`);
             }
-            this.showDeleteModal.open = false;
+            this.showDeleteModal = { open: false, type: '', id: null };
+        },
+
+        addOption() {
+            if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
+            this.selectedQuestion.options.push({ label: `Option ${this.selectedQuestion.options.length + 1}`, value: '' });
+            this.markDirty();
+        },
+
+        removeOption(index) {
+            this.selectedQuestion.options.splice(index, 1);
+            this.markDirty();
         },
 
         async saveFormDetails() {

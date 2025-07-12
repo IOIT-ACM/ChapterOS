@@ -36,93 +36,6 @@
     </form>
 </div>
 
-<div x-show="showQuestionModal" @keydown.escape.window="showQuestionModal = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
-    <form @submit.prevent="saveQuestion()" @click.away="showQuestionModal = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-neutral-700">
-        <div class="flex justify-between items-center p-4 border-b border-neutral-700">
-            <h3 class="text-lg font-bold text-white" x-text="currentQuestion.id ? 'Edit Question' : 'Add Question'"></h3>
-            <button type="button" @click="showQuestionModal = false" class="p-1 text-neutral-400 hover:text-white rounded-full"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <div class="p-6 space-y-6 overflow-y-auto">
-            <div>
-                <label for="question_text" class="block text-sm font-medium text-neutral-300 mb-1">Question Text</label>
-                <input type="text" id="question_text" x-model="currentQuestion.question_text" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500" required>
-            </div>
-            <div>
-                <label for="question_type" class="block text-sm font-medium text-neutral-300 mb-1">Question Type</label>
-                <select id="question_type" x-model="currentQuestion.type" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                    <option value="short_answer">Short Answer</option>
-                    <option value="paragraph">Paragraph</option>
-                    <option value="multiple_choice">Multiple Choice</option>
-                    <option value="checkboxes">Checkboxes</option>
-                    <option value="dropdown">Dropdown</option>
-                    <option value="linear_scale">Linear Scale</option>
-                    <option value="rating">Rating</option>
-                    <option value="multiple_choice_grid">Multiple Choice Grid</option>
-                    <option value="checkbox_grid">Checkbox Grid</option>
-                    <option value="date">Date</option>
-                    <option value="time">Time</option>
-                </select>
-            </div>
-            
-            <div class="border-t border-neutral-700 pt-4 space-y-4">
-                <h4 class="text-md font-semibold text-white">Configuration</h4>
-                <template x-if="['short_answer', 'paragraph'].includes(currentQuestion.type)">
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-300 mb-1">Placeholder Text</label>
-                        <input type="text" x-model="currentQuestion.question_config.placeholder" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                    </div>
-                </template>
-                <template x-if="currentQuestion.type === 'linear_scale'">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Min Value</label>
-                            <input type="number" x-model.number="currentQuestion.question_config.min_value" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Max Value</label>
-                            <input type="number" x-model.number="currentQuestion.question_config.max_value" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Min Label</label>
-                            <input type="text" x-model="currentQuestion.question_config.min_label" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Max Label</label>
-                            <input type="text" x-model="currentQuestion.question_config.max_label" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                        </div>
-                    </div>
-                </template>
-                 <template x-if="currentQuestion.type === 'rating'">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Number of Icons</label>
-                            <input type="number" x-model.number="currentQuestion.question_config.count" min="1" max="10" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-300 mb-1">Icon</label>
-                            <select x-model="currentQuestion.question_config.icon" class="w-full bg-neutral-800 border-neutral-600 rounded-lg text-white focus:ring-orange-500 focus:border-orange-500">
-                                <option value="star">Star</option>
-                                <option value="favorite">Heart</option>
-                                <option value="thumb_up">Thumb Up</option>
-                            </select>
-                        </div>
-                    </div>
-                </template>
-                <p x-if="!['short_answer', 'paragraph', 'linear_scale', 'rating'].includes(currentQuestion.type)" class="text-sm text-neutral-500">No specific configuration for this question type.</p>
-            </div>
-
-            <div class="flex items-center">
-                <input type="checkbox" id="question_is_required" x-model="currentQuestion.is_required" class="h-4 w-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
-                <label for="question_is_required" class="ml-2 block text-sm text-neutral-300">This question is required</label>
-            </div>
-        </div>
-        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-end gap-3">
-            <button type="button" @click="showQuestionModal = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600">Cancel</button>
-            <button type="submit" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700">Save Question</button>
-        </div>
-    </form>
-</div>
-
 <div x-show="showDeleteModal.open" @keydown.escape.window="showDeleteModal.open = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
     <div @click.away="showDeleteModal.open = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-red-500/50">
         <div class="p-6 text-center">
@@ -134,7 +47,7 @@
         </div>
         <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-center gap-3">
             <button type="button" @click="showDeleteModal.open = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 w-full">Cancel</button>
-            <button type="button" @click="confirmDelete()" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 w-full">Yes, Delete</button>
+            <button type="button" @click="deleteQuestion()" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 w-full">Yes, Delete</button>
         </div>
     </div>
 </div>
