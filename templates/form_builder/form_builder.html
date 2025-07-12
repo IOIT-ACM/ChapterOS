@@ -1,0 +1,374 @@
+{% extends "form_builder/base.html" %}
+{% load static %}
+
+{% block title %}Build: {{ form.title }}{% endblock %}
+
+{% block content %}
+<div x-data="formBuilder()" x-init="init()" 
+     @mousemove.window="doResize($event)" 
+     @mouseup.window="stopResize()"
+     class="flex h-full w-full bg-neutral-900 flex-1 overflow-hidden">
+
+    <main class="flex-1 bg-black flex flex-col overflow-hidden min-w-0">
+        <div class="flex items-center justify-between p-4 border-b border-neutral-800 flex-shrink-0">
+            <div>
+                <a href="{% url 'form_builder:form_list' %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Back to All Forms
+                </a>
+                <h2 class="text-xl font-bold text-white" x-text="form.title"></h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'form_builder:form_settings' form.slug %}" class="flex items-center justify-center space-x-2 bg-neutral-700 hover:bg-neutral-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Settings</span>
+                </a>
+                <button @click="addQuestion()" class="flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>Add Question</span>
+                </button>
+            </div>
+        </div>
+        <div id="questions-list-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <template x-if="form.questions.length === 0">
+                <div class="text-center py-12 text-neutral-500">
+                    <span class="material-symbols-outlined text-6xl">quiz</span>
+                    <h3 class="mt-4 font-semibold text-neutral-400">No Questions Yet</h3>
+                    <p class="text-sm">Click "Add Question" to get started.</p>
+                </div>
+            </template>
+            <template x-for="(question, index) in form.questions" :key="question.id">
+                <div @click="selectQuestion(question)"
+                     class="p-4 rounded-lg border cursor-pointer transition-all duration-150"
+                     :class="{
+                         'bg-neutral-800/50 border-neutral-700 hover:bg-neutral-700/50': !isSelected(question),
+                         'bg-orange-900/30 border-orange-700 ring-2 ring-orange-600': isSelected(question)
+                     }">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold text-white" x-text="`${index + 1}. ${question.question_text || 'New Question'}`"></p>
+                            <span class="text-xs text-neutral-400" x-text="`${getQuestionTypeName(question.type)} ${question.is_required ? '• Required' : ''}`"></span>
+                        </div>
+                        <div class="flex items-center gap-1 text-neutral-400">
+                            <button @click.stop="moveQuestion(index, -1)" :disabled="index === 0" class="p-1 rounded-full hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined text-lg">arrow_upward</span>
+                            </button>
+                            <button @click.stop="moveQuestion(index, 1)" :disabled="index === form.questions.length - 1" class="p-1 rounded-full hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined text-lg">arrow_downward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <div @mousedown.prevent="startResize()" class="w-1.5 flex-shrink-0 cursor-col-resize bg-neutral-800 hover:bg-orange-600 transition-colors"></div>
+
+    <aside id="right-panel" class="flex-shrink-0 bg-neutral-950 border-l border-neutral-800 flex flex-col" :style="`width: ${rightPanelWidth}px`">
+        <div x-show="!selectedQuestion" class="flex flex-col items-center justify-center h-full text-center text-neutral-600 p-4">
+            <span class="material-symbols-outlined text-6xl">edit_note</span>
+            <h3 class="mt-4 font-semibold text-neutral-400">Question Editor</h3>
+            <p class="text-sm">Select a question to edit its details, or add a new one.</p>
+        </div>
+        
+        <template x-if="selectedQuestion">
+            <div x-cloak class="flex flex-col h-full">
+                {% include "form_builder/_question_editor.html" %}
+            </div>
+        </template>
+    </aside>
+
+    <div x-show="isDeleteModalOpen" @keydown.escape.window="isDeleteModalOpen = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+        <div @click.away="isDeleteModalOpen = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-red-500/50">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-900/50 mb-4">
+                    <span class="material-symbols-outlined text-red-400 text-2xl">delete_forever</span>
+                </div>
+                <h3 class="text-lg font-bold text-white">Delete Question</h3>
+                <p class="text-sm text-neutral-400 mt-2">Are you sure you want to delete this question? This action cannot be undone.</p>
+            </div>
+            <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-center gap-3">
+                <button type="button" @click="isDeleteModalOpen = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 w-full">Cancel</button>
+                <button type="button" @click="deleteQuestion()" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 w-full">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ form_schema_json|json_script:"form-schema-data" }}
+{% csrf_token %}
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('formBuilder', () => ({
+        form: {},
+        selectedQuestion: null,
+        isDirty: false,
+        
+        isDeleteModalOpen: false,
+        questionToDelete: null,
+        
+        isResizing: false,
+        rightPanelWidth: 550,
+        minPanelWidth: 320,
+        maxPanelWidth: 800,
+
+        identifierManuallyEdited: false,
+        originalQuestionData: null,
+
+        questionTypes: [
+            { value: 'short_answer', name: 'Short Answer' },
+            { value: 'paragraph', name: 'Paragraph' },
+            { value: 'multiple_choice', name: 'Multiple Choice' },
+            { value: 'single_choice', name: 'Single Choice' },
+            { value: 'dropdown', name: 'Dropdown' },
+            { value: 'linear_scale', name: 'Linear Scale' },
+            { value: 'rating', name: 'Rating' },
+            { value: 'multiple_choice_grid', name: 'Multiple Choice Grid' },
+            { value: 'date', name: 'Date' },
+            { value: 'time', name: 'Time' },
+        ],
+
+        apiUrls: {
+            schema: `/form_builder/api/forms/{{ form.slug }}/schema/`,
+            questions: '/form_builder/api/questions/',
+            reorder: `/form_builder/api/forms/{{ form.slug }}/reorder-questions/`,
+        },
+        
+        init() {
+            const schemaData = JSON.parse(document.getElementById('form-schema-data').textContent);
+            this._updateFormState(schemaData);
+        },
+
+        _updateFormState(newFormSchema) {
+            newFormSchema.questions.sort((a, b) => a.display_order - b.display_order);
+            this.form = newFormSchema;
+        },
+
+        startResize() { this.isResizing = true; },
+        stopResize() { this.isResizing = false; },
+        doResize(event) {
+            if (!this.isResizing) return;
+            const newWidth = window.innerWidth - event.clientX;
+            if (newWidth >= this.minPanelWidth && newWidth <= this.maxPanelWidth) {
+                this.rightPanelWidth = newWidth;
+            }
+        },
+
+        getQuestionTypeName(value) {
+            const type = this.questionTypes.find(t => t.value === value);
+            return type ? type.name : 'Unknown';
+        },
+
+        isSelected(question) {
+            return this.selectedQuestion && this.selectedQuestion.id === question.id;
+        },
+
+        markDirty() { this.isDirty = true; },
+
+        generateIdentifier(questionText) {
+            if (!questionText || questionText.trim() === '') return '';
+            return questionText
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
+        },
+
+        onQuestionTextChange() {
+            if (!this.selectedQuestion) return;
+            this.selectedQuestion.identifier = this.generateIdentifier(this.selectedQuestion.question_text);
+            this.markDirty();
+        },
+
+        onIdentifierChange() {
+            if (!this.selectedQuestion) return;
+            this.identifierManuallyEdited = true;
+            this.markDirty();
+        },
+
+        selectQuestion(question) {
+            if (this.selectedQuestion && this.selectedQuestion.id === question.id) return;
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) return;
+            
+            this.originalQuestionData = JSON.parse(JSON.stringify(question));
+            this.selectedQuestion = JSON.parse(JSON.stringify(question));
+            
+            if (!this.selectedQuestion.question_config) this.selectedQuestion.question_config = {};
+            if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
+            if (!this.selectedQuestion.grid_rows) this.selectedQuestion.grid_rows = [];
+            if (!this.selectedQuestion.grid_columns) this.selectedQuestion.grid_columns = [];
+            if (!this.selectedQuestion.conditions) this.selectedQuestion.conditions = [];
+            
+            this.identifierManuallyEdited = false;
+            
+            if (this.selectedQuestion.identifier && this.selectedQuestion.question_text) {
+                const autoGenerated = this.generateIdentifier(this.selectedQuestion.question_text);
+                if (this.selectedQuestion.identifier !== autoGenerated) {
+                    this.identifierManuallyEdited = true;
+                }
+            }
+            
+            this.isDirty = false;
+        },
+
+        unselectQuestion() {
+            if (this.isDirty && !confirm('You have unsaved changes that will be lost. Continue?')) return;
+            this.selectedQuestion = null;
+            this.originalQuestionData = null;
+            this.identifierManuallyEdited = false;
+            this.isDirty = false;
+        },
+
+        apiCall(url, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            };
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
+            return fetch(url, config);
+        },
+
+        async addQuestion() {
+            const payload = {
+                form: this.form.id,
+                question_text: 'Untitled Question',
+                type: 'short_answer',
+                display_order: this.form.questions.length,
+            };
+            const response = await this.apiCall(this.apiUrls.questions, 'POST', payload);
+            if (response.ok) {
+                const newQuestion = await response.json();
+                const refreshResponse = await this.apiCall(this.apiUrls.schema);
+                if (refreshResponse.ok) {
+                    const newFormSchema = await refreshResponse.json();
+                    this._updateFormState(newFormSchema);
+                    const toSelect = this.form.questions.find(q => q.id === newQuestion.id);
+                    if (toSelect) this.selectQuestion(toSelect);
+                }
+            } else {
+                alert('Failed to add new question.');
+            }
+        },
+
+        async saveQuestion() {
+            if (!this.selectedQuestion || !this.isDirty) return;
+
+            const newIdentifier = this.selectedQuestion.identifier;
+            if (newIdentifier) {
+                const isDuplicate = this.form.questions.some(q => 
+                    q.id !== this.selectedQuestion.id && q.identifier.toLowerCase() === newIdentifier.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                    alert(`The identifier "${newIdentifier}" is already in use on this form. Please choose a unique identifier.`);
+                    return;
+                }
+            }
+
+            const url = `${this.apiUrls.questions}${this.selectedQuestion.id}/`;
+            const dataBeingSaved = JSON.parse(JSON.stringify(this.selectedQuestion));
+            const response = await this.apiCall(url, 'PUT', dataBeingSaved);
+
+            if (response.ok) {
+                this.isDirty = false;
+                const updatedFormSchema = await response.json();
+                const previouslySelectedId = dataBeingSaved.id;
+
+                const questionIndexInResponse = updatedFormSchema.questions.findIndex(q => q.id === previouslySelectedId);
+                if (questionIndexInResponse > -1) {
+                    updatedFormSchema.questions[questionIndexInResponse] = dataBeingSaved;
+                }
+
+                this._updateFormState(updatedFormSchema);
+                const toSelect = this.form.questions.find(q => q.id === previouslySelectedId);
+                if (toSelect) {
+                    this.selectQuestion(toSelect);
+                } else {
+                    this.unselectQuestion();
+                }
+            } else {
+                const errorData = await response.json();
+                if (errorData.identifier) {
+                    alert('Failed to save question: ' + errorData.identifier.join(' '));
+                } else {
+                    alert('Failed to save question: ' + JSON.stringify(errorData));
+                }
+            }
+        },
+
+        confirmDeleteQuestion(question) {
+            if (!question || !question.id) {
+                console.error("Cannot delete: invalid question object provided.");
+                return;
+            }
+            this.questionToDelete = question;
+            this.isDeleteModalOpen = true;
+        },
+
+        async deleteQuestion() {
+            if (!this.questionToDelete) return;
+            const id = this.questionToDelete.id;
+            const url = `${this.apiUrls.questions}${id}/`;
+            this.isDeleteModalOpen = false;
+            try {
+                const response = await this.apiCall(url, 'DELETE');
+                if (response.ok) {
+                    const updatedFormSchema = await response.json();
+                    this._updateFormState(updatedFormSchema);
+                    if (this.selectedQuestion && this.selectedQuestion.id === id) {
+                        this.unselectQuestion();
+                    }
+                } else {
+                    alert(`Failed to delete question. Please try again.`);
+                }
+            } catch (error) {
+                alert('An unexpected error occurred. Please check the console for details.');
+            } finally {
+                this.questionToDelete = null;
+            }
+        },
+
+        moveQuestion(index, direction) {
+            if ((direction === -1 && index === 0) || (direction === 1 && index === this.form.questions.length - 1)) return;
+            const newIndex = index + direction;
+            const questions = [...this.form.questions];
+            const [movedItem] = questions.splice(index, 1);
+            questions.splice(newIndex, 0, movedItem);
+            this.form.questions = questions;
+            this.updateQuestionOrder(questions.map(q => q.id));
+        },
+
+        async updateQuestionOrder(orderedIds) {
+            try {
+                const response = await this.apiCall(this.apiUrls.reorder, 'POST', { ordered_ids: orderedIds });
+                if (response.ok) {
+                    const updatedFormSchema = await response.json();
+                    this._updateFormState(updatedFormSchema);
+                } else {
+                    alert('Failed to save the new question order. Please refresh and try again.');
+                }
+            } catch (error) {
+                alert('An error occurred while saving the new question order.');
+            }
+        },
+
+        addOption() { this.selectedQuestion.options.push({ label: `Option ${this.selectedQuestion.options.length + 1}`, value: '' }); this.markDirty(); },
+        removeOption(index) { this.selectedQuestion.options.splice(index, 1); this.markDirty(); },
+        addGridRow() { this.selectedQuestion.grid_rows.push({ label: `Row ${this.selectedQuestion.grid_rows.length + 1}`, value: '' }); this.markDirty(); },
+        removeGridRow(index) { this.selectedQuestion.grid_rows.splice(index, 1); this.markDirty(); },
+        addGridColumn() { this.selectedQuestion.grid_columns.push({ label: `Column ${this.selectedQuestion.grid_columns.length + 1}`, value: '' }); this.markDirty(); },
+        removeGridColumn(index) { this.selectedQuestion.grid_columns.splice(index, 1); this.markDirty(); },
+        dependableQuestions() { if (!this.selectedQuestion) return []; const currentIndex = this.form.questions.findIndex(q => q.id === this.selectedQuestion.id); if (currentIndex === -1) return this.form.questions.filter(q => q.id); return this.form.questions.filter((q, index) => index < currentIndex); },
+        getDependentQuestionType(questionId) { if (!questionId) return null; const question = this.form.questions.find(q => q.id == questionId); return question ? question.type : null; },
+        getTriggerOptions(questionId) { if (!questionId) return []; const question = this.form.questions.find(q => q.id == questionId); return question && question.options ? question.options : []; },
+        addCondition() { this.selectedQuestion.conditions.push({ condition_type: 'show_if', depends_on_question: '', trigger_value: '' }); this.markDirty(); },
+        removeCondition(index) { this.selectedQuestion.conditions.splice(index, 1); this.markDirty(); },
+    }));
+});
+</script>
+{% endblock %}

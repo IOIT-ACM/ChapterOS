@@ -3,6 +3,7 @@ venv
 staticfiles
 static/css/index.css
 .env
+.env.backup
 
 **/__pycache__/
 *.py[cod]

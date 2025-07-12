@@ -26,28 +26,40 @@ ChapterOS is the central management hub for the AISSMS IOIT ACM Student Chapter.
 ## Tech Stack
 
 - **Backend:** Django, Python
-- **Frontend:** HTML, Tailwind CSS, Vanilla JavaScript
+- **Frontend:** HTML, Tailwind CSS, Vanilla JavaScript, Alpine.js
 - **Database:** MySQL
 - **Deployment:** Gunicorn / Passenger
 
-## Setup
+## Development Setup
 
-Follow these instructions to set up the project on your local machine for development and testing.
+Choose one of the following methods to set up your local development environment. The Docker method is recommended for a quick and consistent database setup.
 
-### Prerequisites
+### Option 1: Docker for Database (Recommended)
+
+This method uses Docker to run the MySQL database and phpMyAdmin, while you run the Django application locally on your machine.
+
+#### Prerequisites
 
 - Python 3.6.8
 - Node.js and npm
-- A running MySQL server
+- Docker and Docker Compose
 
-### 1. Clone the Repository
+#### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/IOIT-ACM/ChapterOS.git
 cd ChapterOS
 ```
 
-### 2. Setup the Environment
+#### 2. Start Database Services
+
+This command starts the MySQL database and phpMyAdmin services in the background using the configuration in `docker-compose.yml`.
+
+```bash
+docker-compose up -d
+```
+
+#### 3. Setup Local Environment
 
 A `Makefile` is provided to simplify the setup process. This command will create a Python virtual environment, install all Python and Node.js dependencies, and create a `.env` file from the example.
 
@@ -55,21 +67,26 @@ A `Makefile` is provided to simplify the setup process. This command will create
 make setup
 ```
 
-### 3. Configure Environment Variables
+#### 4. Configure Environment Variables
 
-Edit the newly created `.env` file with your MySQL database credentials.
+The `make setup` command creates a `.env` file. Open it and ensure it has the following configuration to connect your local Django application to the Docker database.
 
 ```ini
 # .env
-DB_HOST="127.0.0.1"
-DB_NAME="chapteros_db"
-DB_USER="your_db_user"
-DB_PASSWORD="your_db_password"
+DB_HOST=127.0.0.1
+DB_NAME=chapteros_db
+DB_USER=chapteros_user
+DB_PASSWORD=chapteros_password
+
+# Django Settings
+DEBUG=True
+SECRET_KEY=your-super-secret-key-here
 ```
+The database credentials must match those in `docker-compose.yml`.
 
-### 4. Run Initial Database Migrations
+#### 5. Run Initial Database Migrations
 
-Apply the initial database schema and create all necessary tables.
+With the database running in Docker and your local environment ready, apply the migrations.
 
 ```bash
 # Make sure your virtual environment is active
@@ -78,7 +95,7 @@ source venv/bin/activate
 python3 manage.py migrate
 ```
 
-### 5. Create a Superuser
+#### 6. Create a Superuser
 
 To access the Django Admin panel (`/admin/`), you need to create a superuser account.
 
@@ -88,7 +105,7 @@ python3 manage.py createsuperuser
 
 Follow the prompts to create your admin account.
 
-## Running the Application
+#### 7. Running the Application
 
 For development, you need to run two processes in separate terminal windows.
 
@@ -106,6 +123,72 @@ For development, you need to run two processes in separate terminal windows.
     ```bash
     npm run watch
     ```
+
+#### 8. Access Your Services
+
+- **Django Application:** [http://localhost:8000](http://localhost:8000)
+- **phpMyAdmin (Database GUI):** [http://localhost:8080](http://localhost:8080)
+  - **Server:** `db`
+  - **Username:** `root`
+  - **Password:** `root_password_123`
+
+#### Managing Docker Containers
+
+To stop the database and phpMyAdmin services when you are done:
+```bash
+docker-compose down
+```
+
+---
+
+### Option 2: Manual Setup
+
+This method requires you to install and manage a MySQL server directly on your local machine.
+
+#### Prerequisites
+
+- Python 3.6.8
+- Node.js and npm
+- A running MySQL server on your local machine.
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/IOIT-ACM/ChapterOS.git
+cd ChapterOS
+```
+
+#### 2. Setup the Environment
+
+```bash
+make setup
+```
+
+#### 3. Configure Environment Variables
+
+Edit the newly created `.env` file with your local MySQL database credentials.
+
+```ini
+# .env
+DB_HOST="127.0.0.1"
+DB_NAME="your_db_name"
+DB_USER="your_db_user"
+DB_PASSWORD="your_db_password"
+```
+
+#### 4. Run Initial Database Migrations & Create Superuser
+
+```bash
+# Make sure your virtual environment is active
+source venv/bin/activate
+
+python3 manage.py migrate
+python3 manage.py createsuperuser
+```
+
+#### 5. Running the Application
+
+Follow the same steps as in the Docker guide for running the Django server and Tailwind watcher.
 
 ## ⚠️ Important: Database Migrations
 

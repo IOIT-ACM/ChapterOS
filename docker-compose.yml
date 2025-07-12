@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: chapteros_db
+    restart: always
+    # This port mapping is crucial for your local Django app to connect to the database
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: chapteros_db
+      MYSQL_USER: chapteros_user
+      MYSQL_PASSWORD: chapteros_password
+      MYSQL_ROOT_PASSWORD: root_password_123
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - chapteros_net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: chapteros_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root_password_123
+    depends_on:
+      - db
+    networks:
+      - chapteros_net
+
+volumes:
+  db_data:
+
+networks:
+  chapteros_net:
+    driver: bridge
