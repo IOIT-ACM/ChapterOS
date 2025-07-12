@@ -3,7 +3,7 @@
 {% block title %}Settings: {{ form.instance.title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl px-4 sm:px-6 lg:px-8 py-8">
+<div class="px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
     <div class="mb-10">
         <a href="{% url 'form_builder:form_build' object.slug %}" class="text-sm text-orange-500 hover:text-orange-400 flex items-center gap-1 mb-2">
             <span class="material-symbols-outlined text-base">arrow_back</span>
@@ -13,7 +13,7 @@
         <p class="mt-2 text-neutral-400">Edit the core details of your form, "{{ object.title }}".</p>
     </div>
 
-    <form method="post" class="space-y-8">
+    <form method="post" class="space-y-8 max-w-3xl">
         {% csrf_token %}
         
         <div class="relative z-0 w-full group">
@@ -47,12 +47,7 @@
             <label for="{{ form.deadline.id_for_label }}" class="peer-focus:font-medium absolute text-sm text-neutral-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0">Deadline</label>
         </div>
 
-        <div class="flex items-center gap-3">
-            {{ form.is_active }}
-            <label for="{{ form.is_active.id_for_label }}" class="text-sm text-neutral-300">Form is active and accepting responses</label>
-        </div>
-
-        <div class="flex justify-end gap-4 pt-4 border-t border-neutral-800">
+        <div class="flex justify-end gap-4 pt-6">
             <a href="{% url 'form_builder:form_build' object.slug %}" class="px-6 py-2.5 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 transition-colors">
                 Cancel
             </a>

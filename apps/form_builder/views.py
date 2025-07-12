@@ -6,7 +6,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Case, When
 from django.core.exceptions import PermissionDenied
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm, FormSettingsForm
@@ -160,6 +160,38 @@ class PublicFormSchemaAPIView(generics.RetrieveAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+class ReorderQuestionsAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    lookup_field = 'slug'
+    queryset = Form.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_object()
+        self.check_object_permissions(request, form)
+
+        if form.is_approved:
+            raise PermissionDenied("Cannot reorder questions on an approved form.")
+
+        ordered_ids = request.data.get('ordered_ids')
+        if not isinstance(ordered_ids, list):
+            return Response({'detail': '`ordered_ids` must be a list.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            questions = Question.objects.filter(form=form)
+            
+            form_question_ids = set(questions.values_list('id', flat=True))
+            if set(ordered_ids) != form_question_ids:
+                return Response({'detail': 'Provided question IDs do not match the questions in this form.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            ordering = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_ids)])
+            questions.update(display_order=ordering)
+
+        updated_form = Form.objects.prefetch_related(
+            'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions__depends_on_question'
+        ).get(pk=form.pk)
+        
+        return Response(FormSchemaSerializer(updated_form).data, status=status.HTTP_200_OK)
+
 class QuestionCreateAPIView(generics.CreateAPIView):
     serializer_class = QuestionSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -243,18 +275,12 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
         deleted_order = instance.display_order
 
         with transaction.atomic():
-            # The perform_destroy method calls instance.delete(), which triggers
-            # all on_delete=CASCADE relations.
             self.perform_destroy(instance)
-
-            # Re-sequence the display_order of remaining questions to prevent gaps.
             Question.objects.filter(
                 form=form, 
                 display_order__gt=deleted_order
             ).update(display_order=F('display_order') - 1)
 
-        # Fetch the entire form again to return the updated schema, which is
-        # what the frontend expects after any modification.
         updated_form = Form.objects.prefetch_related(
             'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions__depends_on_question'
         ).get(pk=form.pk)

@@ -19,13 +19,19 @@
             <div class="p-6">
                 <div class="flex justify-between items-start">
                     <h2 class="text-lg font-bold text-white mb-2">{{ form.title }}</h2>
-                    {% if form.is_approved %}
+                    <div class="flex items-center space-x-2">
+                        {% if form.is_approved %}
                         <span class="px-2 py-1 text-xs font-medium text-cyan-300 bg-cyan-900/50 rounded-full">Approved</span>
-                    {% elif form.is_active %}
+                        {% else %}
+                        <span class="px-2 py-1 text-xs font-medium text-cyan-300 bg-cyan-900/50 rounded-full">Not Approved</span>
+                        {% endif %}
+                        
+                        {% if form.is_active %}
                         <span class="px-2 py-1 text-xs font-medium text-green-300 bg-green-900/50 rounded-full">Active</span>
-                    {% else %}
+                        {% else %}
                         <span class="px-2 py-1 text-xs font-medium text-red-300 bg-red-900/50 rounded-full">Inactive</span>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
                 <p class="text-sm text-neutral-400 line-clamp-2 mb-4 h-10">{{ form.description|default:"No description." }}</p>
                 <div class="flex items-center text-sm text-neutral-500 space-x-4">

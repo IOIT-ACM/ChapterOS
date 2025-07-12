@@ -7,7 +7,7 @@ class Form(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False, help_text="Indicates if the form has been approved by an admin.")
     created_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
