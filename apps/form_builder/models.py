@@ -18,10 +18,9 @@ class Form(models.Model):
             original_slug = self.slug
             queryset = Form.objects.filter(slug__startswith=self.slug).exclude(id=self.id)
             counter = 1
-            while queryset.exists():
+            while Form.objects.filter(slug=self.slug).exclude(id=self.id).exists():
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
-                queryset = Form.objects.filter(slug=self.slug).exclude(id=self.id)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -57,7 +56,16 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.identifier:
-            self.identifier = slugify(self.question_text)[:100]
+            base_identifier = slugify(self.question_text) or "question"
+            base_identifier = base_identifier[:95]
+            
+            counter = 1
+            identifier = base_identifier
+            while Question.objects.filter(form=self.form, identifier=identifier).exclude(pk=self.pk).exists():
+                identifier = f"{base_identifier}-{counter}"
+                counter += 1
+            self.identifier = identifier
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
