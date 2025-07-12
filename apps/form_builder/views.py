@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.utils import timezone
+from django.db import transaction
+from django.db.models import F
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm, FormSettingsForm
 from .serializers import (
@@ -117,6 +119,14 @@ class PublicFormSchemaAPIView(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
+        if not instance.is_approved:
+            data = {
+                'title': instance.title,
+                'description': instance.description,
+                'message': "This form is pending approval."
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
         if not instance.is_active:
             data = {
                 'title': instance.title,
@@ -205,6 +215,30 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
         ).get(pk=instance.form.pk)
         
         return Response(FormSchemaSerializer(updated_form).data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        form = instance.form
+        deleted_order = instance.display_order
+
+        with transaction.atomic():
+            # The perform_destroy method calls instance.delete(), which triggers
+            # all on_delete=CASCADE relations.
+            self.perform_destroy(instance)
+
+            # Re-sequence the display_order of remaining questions to prevent gaps.
+            Question.objects.filter(
+                form=form, 
+                display_order__gt=deleted_order
+            ).update(display_order=F('display_order') - 1)
+
+        # Fetch the entire form again to return the updated schema, which is
+        # what the frontend expects after any modification.
+        updated_form = Form.objects.prefetch_related(
+            'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions__depends_on_question'
+        ).get(pk=form.pk)
+        
+        return Response(FormSchemaSerializer(updated_form).data, status=status.HTTP_200_OK)
 
 
 class QuestionOptionCreateAPIView(generics.CreateAPIView):

@@ -201,7 +201,7 @@
 </div>
 
 <div class="p-4 bg-neutral-950/50 border-t border-neutral-800 flex justify-between items-center flex-shrink-0">
-    <button @click="confirmDeleteQuestion(selectedQuestion.id)" class="px-4 py-2 bg-red-600/20 text-red-400 text-sm font-semibold rounded-lg hover:bg-red-600/40 hover:text-red-300 transition-colors">
+    <button @click="confirmDeleteQuestion(selectedQuestion)" class="px-4 py-2 bg-red-600/20 text-red-400 text-sm font-semibold rounded-lg hover:bg-red-600/40 hover:text-red-300 transition-colors">
         Delete
     </button>
     <button @click="saveQuestion()" :disabled="!isDirty" class="px-4 py-2 bg-orange-600 text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors disabled:bg-neutral-600 disabled:cursor-not-allowed">

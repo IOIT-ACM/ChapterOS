@@ -8,6 +8,7 @@ class Form(models.Model):
     description = models.TextField(blank=True, null=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_approved = models.BooleanField(default=False, help_text="Indicates if the form has been approved by an admin.")
     created_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
     confirmation_message = models.TextField(blank=True, null=True, default="Thank you for your submission.")
@@ -34,7 +35,7 @@ class Question(models.Model):
         ('short_answer', 'Short Answer'),
         ('paragraph', 'Paragraph'),
         ('multiple_choice', 'Multiple Choice'),
-        ('multiple_choice', 'Single Choice'),
+        ('single_choice', 'Single Choice'),
         ('dropdown', 'Dropdown'),
         ('file_upload', 'File Upload'),
         ('linear_scale', 'Linear Scale'),

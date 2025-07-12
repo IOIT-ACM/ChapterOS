@@ -33,11 +33,38 @@ class QuestionInline(admin.StackedInline):
 
 @admin.register(Form)
 class FormAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'is_active', 'created_at')
-    list_filter = ('is_active', 'user')
+    list_display = ('title', 'user', 'is_active', 'is_approved', 'created_at')
+    list_filter = ('is_active', 'is_approved', 'user')
     search_fields = ('title', 'description')
     prepopulated_fields = {'slug': ('title',)}
     inlines = [QuestionInline]
+    readonly_fields = ('created_at',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'description', 'user')
+        }),
+        ('Status & Approval', {
+            'fields': ('is_active', 'is_approved')
+        }),
+        ('Configuration', {
+            'fields': ('deadline', 'confirmation_message')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        })
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        
+        is_chair = request.user.groups.filter(name='Chair').exists()
+        
+        if not request.user.is_superuser and not is_chair:
+            return list(readonly_fields) + ['is_approved']
+        
+        return readonly_fields
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):

@@ -65,13 +65,30 @@
             <p class="text-sm">Select a question to edit its details, or add a new one.</p>
         </div>
         
-        <div x-show="selectedQuestion" x-cloak class="flex flex-col h-full">
-            {% include "form_builder/_question_editor.html" %}
-        </div>
+        <template x-if="selectedQuestion">
+            <div x-cloak class="flex flex-col h-full">
+                {% include "form_builder/_question_editor.html" %}
+            </div>
+        </template>
     </aside>
 </div>
 
-{% include "form_builder/_modals.html" %}
+<div x-show="isDeleteModalOpen" @keydown.escape.window="isDeleteModalOpen = false" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;">
+    <div @click.away="isDeleteModalOpen = false" class="bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-red-500/50">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-900/50 mb-4">
+                <span class="material-symbols-outlined text-red-400 text-2xl">delete_forever</span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Delete Question</h3>
+            <p class="text-sm text-neutral-400 mt-2">Are you sure you want to delete this question? This action cannot be undone.</p>
+        </div>
+        <div class="p-4 bg-neutral-950/50 border-t border-neutral-700 flex justify-center gap-3">
+            <button type="button" @click="isDeleteModalOpen = false" class="px-4 py-2 bg-neutral-700 text-white text-sm font-semibold rounded-lg hover:bg-neutral-600 w-full">Cancel</button>
+            <button type="button" @click="deleteQuestion()" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 w-full">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
 {{ form_schema_json|json_script:"form-schema-data" }}
 {% csrf_token %}
 
@@ -81,9 +98,9 @@ document.addEventListener('alpine:init', () => {
         form: {},
         selectedQuestion: null,
         isDirty: false,
-        showApiModal: false,
-        showEditFormModal: false,
-        showDeleteModal: { open: false, type: '', id: null },
+        
+        isDeleteModalOpen: false,
+        questionToDelete: null,
         
         isResizing: false,
         rightPanelWidth: 450,
@@ -228,26 +245,47 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        confirmDeleteQuestion(id) {
-            this.showDeleteModal = { open: true, type: 'Question', id: id };
+        confirmDeleteQuestion(question) {
+            if (!question || !question.id) {
+                console.error("Cannot delete: invalid question object provided.");
+                return;
+            }
+            this.questionToDelete = question;
+            this.isDeleteModalOpen = true;
         },
 
         async deleteQuestion() {
-            const id = this.showDeleteModal.id;
-            if (!id) return;
-            const url = `${this.apiUrls.questions}${id}/`;
-            const response = await this.apiCall(url, 'DELETE');
-            if (response.ok) {
-                this.unselectQuestion();
-                const refreshResponse = await this.apiCall(this.apiUrls.schema);
-                if (refreshResponse.ok) {
-                    const newFormSchema = await refreshResponse.json();
-                    this._updateFormState(newFormSchema);
-                }
-            } else {
-                alert(`Failed to delete question.`);
+            if (!this.questionToDelete) {
+                console.error("Delete action triggered, but no question was staged for deletion.");
+                return;
             }
-            this.showDeleteModal = { open: false, type: '', id: null };
+
+            const id = this.questionToDelete.id;
+            const url = `${this.apiUrls.questions}${id}/`;
+
+            this.isDeleteModalOpen = false;
+
+            try {
+                const response = await this.apiCall(url, 'DELETE');
+
+                if (response.ok) {
+                    const updatedFormSchema = await response.json();
+                    this._updateFormState(updatedFormSchema);
+                    
+                    if (this.selectedQuestion && this.selectedQuestion.id === id) {
+                        this.selectedQuestion = null;
+                        this.isDirty = false;
+                    }
+                } else {
+                    console.error(`Failed to delete question. Server responded with status ${response.status}`);
+                    alert(`Failed to delete question. Please try again.`);
+                }
+            } catch (error) {
+                console.error('A network or script error occurred during question deletion:', error);
+                alert('An unexpected error occurred. Please check the console for details.');
+            } finally {
+                this.questionToDelete = null;
+            }
         },
 
         addOption() {
@@ -303,23 +341,6 @@ document.addEventListener('alpine:init', () => {
             this.selectedQuestion.conditions.splice(index, 1);
             this.markDirty();
         },
-
-        async saveFormDetails() {
-            const formElement = document.getElementById('edit-form-details');
-            const formData = new FormData(formElement);
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
-            });
-            if (response.ok) {
-                this.showEditFormModal = false;
-                this.form.title = formData.get('title');
-                this.form.description = formData.get('description');
-            } else {
-                alert('Failed to update form details.');
-            }
-        }
     }));
 });
 </script>
