@@ -145,6 +145,7 @@ document.addEventListener('alpine:init', () => {
             if (!this.selectedQuestion.options) this.selectedQuestion.options = [];
             if (!this.selectedQuestion.grid_rows) this.selectedQuestion.grid_rows = [];
             if (!this.selectedQuestion.grid_columns) this.selectedQuestion.grid_columns = [];
+            if (!this.selectedQuestion.conditions) this.selectedQuestion.conditions = [];
             this.isDirty = false;
         },
 
@@ -267,6 +268,42 @@ document.addEventListener('alpine:init', () => {
 
         removeGridColumn(index) {
             this.selectedQuestion.grid_columns.splice(index, 1);
+            this.markDirty();
+        },
+
+        dependableQuestions() {
+            if (!this.selectedQuestion) return [];
+            const currentIndex = this.form.questions.findIndex(q => q.id === this.selectedQuestion.id);
+            if (currentIndex === -1) return [];
+            return this.form.questions.filter((q, index) => q.id !== this.selectedQuestion.id && index < currentIndex);
+        },
+
+        getDependentQuestionType(questionId) {
+            if (!questionId) return null;
+            const question = this.form.questions.find(q => q.id == questionId);
+            return question ? question.type : null;
+        },
+
+        getTriggerOptions(questionId) {
+            if (!questionId) return [];
+            const question = this.form.questions.find(q => q.id == questionId);
+            return question ? question.options : [];
+        },
+
+        addCondition() {
+            if (!this.selectedQuestion.conditions) {
+                this.selectedQuestion.conditions = [];
+            }
+            this.selectedQuestion.conditions.push({
+                condition_type: 'show_if',
+                depends_on_question: '',
+                trigger_value: ''
+            });
+            this.markDirty();
+        },
+
+        removeCondition(index) {
+            this.selectedQuestion.conditions.splice(index, 1);
             this.markDirty();
         },
 

@@ -137,8 +137,61 @@
                 </div>
             </div>
         </template>
-
     </div>
+
+    <details class="border-t border-neutral-800 pt-4 group">
+        <summary class="text-md font-semibold text-white cursor-pointer list-none flex items-center justify-between">
+            <span>Conditional Logic</span>
+            <span class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+        </summary>
+        <div class="mt-4 space-y-4">
+            <p class="text-sm text-neutral-400">Show or hide this question based on answers to previous questions.</p>
+            
+            <template x-for="(condition, index) in selectedQuestion.conditions" :key="index">
+                <div class="p-3 bg-neutral-800/50 rounded-lg border border-neutral-700 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-semibold text-neutral-300" x-text="`Condition ${index + 1}`"></span>
+                        <button @click="removeCondition(index)" class="p-1 text-neutral-500 hover:text-red-400 rounded-full hover:bg-red-900/50">
+                            <span class="material-symbols-outlined text-base">delete</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 items-center">
+                        <select x-model="condition.condition_type" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500">
+                            <option value="show_if">Show if</option>
+                            <option value="hide_if">Hide if</option>
+                        </select>
+
+                        <select x-model="condition.depends_on_question" @change="condition.trigger_value = ''; markDirty()" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Select a question...</option>
+                            <template x-for="q in dependableQuestions()" :key="q.id">
+                                <option :value="q.id" x-text="q.question_text"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div x-show="condition.depends_on_question">
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">The answer is</label>
+                        <template x-if="['multiple_choice', 'dropdown'].includes(getDependentQuestionType(condition.depends_on_question))">
+                            <select x-model="condition.trigger_value" @change="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500">
+                                <option value="">Select an answer...</option>
+                                <template x-for="opt in getTriggerOptions(condition.depends_on_question)" :key="opt.value">
+                                    <option :value="opt.value" x-text="opt.label"></option>
+                                </template>
+                            </select>
+                        </template>
+                        <template x-if="!['multiple_choice', 'dropdown'].includes(getDependentQuestionType(condition.depends_on_question))">
+                             <input type="text" x-model.debounce.500ms="condition.trigger_value" @input="markDirty" class="w-full bg-neutral-800 border-neutral-600 p-2 rounded-lg text-white text-sm focus:ring-orange-500 focus:border-orange-500" placeholder="Enter expected answer">
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <button @click="addCondition()" class="text-sm text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">add</span> Add Condition
+            </button>
+        </div>
+    </details>
 </div>
 
 <div class="p-4 bg-neutral-950/50 border-t border-neutral-800 flex justify-between items-center flex-shrink-0">

@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from .models import Form, Question, QuestionOption, GridRow, GridColumn
+from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm
 from .serializers import FormSchemaSerializer, QuestionSerializer, QuestionOptionSerializer
 from rest_framework import generics, permissions, status
@@ -21,6 +21,8 @@ class IsOwner(permissions.BasePermission):
         if isinstance(obj, GridRow):
             return obj.question.form.user == request.user
         if isinstance(obj, GridColumn):
+            return obj.question.form.user == request.user
+        if isinstance(obj, QuestionCondition):
             return obj.question.form.user == request.user
         return False
 
@@ -104,6 +106,7 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
         options_data = request.data.pop('options', None)
         grid_rows_data = request.data.pop('grid_rows', None)
         grid_columns_data = request.data.pop('grid_columns', None)
+        conditions_data = request.data.pop('conditions', None)
         
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -127,8 +130,26 @@ class QuestionRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView
                 col_data.pop('id', None)
                 GridColumn.objects.create(question=instance, display_order=i, **col_data)
 
+        if conditions_data is not None:
+            instance.conditions.all().delete()
+            for condition_data in conditions_data:
+                condition_data.pop('id', None)
+                depends_on_question_id = condition_data.pop('depends_on_question', None)
+                if not depends_on_question_id:
+                    continue
+                
+                try:
+                    depends_on_question = Question.objects.get(pk=depends_on_question_id, form=instance.form)
+                    QuestionCondition.objects.create(
+                        question=instance,
+                        depends_on_question=depends_on_question,
+                        **condition_data
+                    )
+                except Question.DoesNotExist:
+                    pass
+
         updated_form = Form.objects.prefetch_related(
-            'questions__options', 'questions__grid_rows', 'questions__grid_columns'
+            'questions__options', 'questions__grid_rows', 'questions__grid_columns', 'questions__conditions'
         ).get(pk=instance.form.pk)
         
         return Response(FormSchemaSerializer(updated_form).data)
