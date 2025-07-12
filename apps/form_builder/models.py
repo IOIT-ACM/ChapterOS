@@ -152,8 +152,7 @@ class Answer(models.Model):
 class GridAnswer(models.Model):
     answer = models.OneToOneField(Answer, on_delete=models.CASCADE, related_name='grid_answer')
     grid_row = models.ForeignKey(GridRow, on_delete=models.CASCADE)
-    grid_column = models.ForeignKey(GridColumn, on_delete=models.CASCADE, null=True, blank=True)
-    selected_columns = models.JSONField(default=list, blank=True)
+    grid_column = models.ForeignKey(GridColumn, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Grid answer for row '{self.grid_row.label}'"

@@ -14,7 +14,7 @@ erDiagram
     questions {
         int id PK "Primary key - unique identifier for each question"
         int form_id FK "Foreign key - references the form this question belongs to"
-        string type "Question type ENUM('short_answer', 'paragraph', 'multiple_choice', 'checkboxes', 'dropdown', 'file_upload', 'linear_scale', 'rating', 'multiple_choice_grid', 'checkbox_grid', 'date', 'time')"
+        string type "Question type ENUM('short_answer', 'paragraph', 'multiple_choice', 'checkboxes', 'dropdown', 'file_upload', 'linear_scale', 'rating', 'multiple_choice_grid', 'date', 'time')"
         string identifier UK "Unique identifier within the form scope, e.g., 'applicant-name'"
         string question_text "The actual question text displayed to users"
         string description_text "Optional helper text or additional context for the question"
@@ -77,7 +77,6 @@ erDiagram
         int answer_id FK "Foreign key - references the parent answer record"
         int grid_row_id FK "Foreign key - references the grid row"
         int grid_column_id FK "Foreign key - references the grid column (for single choice)"
-        json selected_columns "JSON array of column IDs (for checkbox grids allowing multiple selections per row)"
     }
 
     %% Relationships
