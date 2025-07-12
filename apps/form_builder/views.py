@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from django.utils import timezone
 from .models import Form, Question, QuestionOption, GridRow, GridColumn, QuestionCondition
 from .forms import FormCreateForm
 from .serializers import (
@@ -108,6 +109,14 @@ class PublicFormSchemaAPIView(generics.RetrieveAPIView):
                 'title': instance.title,
                 'description': instance.description,
                 'message': "This form is currently not accepting responses."
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
+        if instance.deadline and timezone.now() > instance.deadline:
+            data = {
+                'title': instance.title,
+                'description': instance.description,
+                'message': "The deadline for this form has passed."
             }
             return Response(data, status=status.HTTP_200_OK)
 

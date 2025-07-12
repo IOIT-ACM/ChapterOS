@@ -35,6 +35,26 @@ class QuestionSerializer(serializers.ModelSerializer):
             'options', 'grid_rows', 'grid_columns', 'conditions'
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        
+        if not data.get('description_text'):
+            data.pop('description_text', None)
+        if not data.get('validation_rules'):
+            data.pop('validation_rules', None)
+        if not data.get('question_config'):
+            data.pop('question_config', None)
+        if not data.get('options'):
+            data.pop('options', None)
+        if not data.get('grid_rows'):
+            data.pop('grid_rows', None)
+        if not data.get('grid_columns'):
+            data.pop('grid_columns', None)
+        if not data.get('conditions'):
+            data.pop('conditions', None)
+
+        return data
+
     def validate(self, data):
         identifier = data.get('identifier')
         if not identifier:
@@ -71,12 +91,11 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class FormSchemaSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
-    user = serializers.StringRelatedField()
 
     class Meta:
         model = Form
         fields = [
-            'id', 'title', 'description', 'slug', 'user', 'is_active',
+            'title', 'description',
             'deadline', 'confirmation_message', 'questions'
         ]
 
@@ -122,14 +141,6 @@ class PublicQuestionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        question_type = instance.type
-
-        if question_type not in ['multiple_choice', 'checkboxes', 'dropdown']:
-            data.pop('options', None)
-
-        if question_type not in ['multiple_choice_grid', 'checkbox_grid']:
-            data.pop('grid_rows', None)
-            data.pop('grid_columns', None)
         
         if not data.get('description_text'):
             data.pop('description_text', None)
@@ -137,6 +148,12 @@ class PublicQuestionSerializer(serializers.ModelSerializer):
             data.pop('validation_rules', None)
         if not data.get('question_config'):
             data.pop('question_config', None)
+        if not data.get('options'):
+            data.pop('options', None)
+        if not data.get('grid_rows'):
+            data.pop('grid_rows', None)
+        if not data.get('grid_columns'):
+            data.pop('grid_columns', None)
         if not data.get('conditions'):
             data.pop('conditions', None)
 
