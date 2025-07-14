@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.calendar_view, name='calendar'),
 
     # API Endpoints
+    path('api/events/filter/', views.api_filter_events, name='api_filter_events'),
     path('api/events/', views.api_events, name='api_events'),
     path('api/categories/', views.api_event_categories, name='api_event_categories'),
     path('api/categories/bulk-add/', views.api_bulk_add_categories, name='api_bulk_add_categories'),

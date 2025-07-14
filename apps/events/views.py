@@ -13,6 +13,8 @@ import io
 import json
 import random
 import pandas as pd
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 
 def log_event_history(event, user, action, changes=None):
@@ -50,6 +52,57 @@ def api_auth_required(view_func):
         
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+@csrf_exempt
+@require_POST
+def api_filter_events(request):
+    """
+    Fetches events based on a date range and category filters provided in the POST body.
+    """
+    try:
+        data = json.loads(request.body)
+        start_date_str = data['start_date']
+        end_date_str = data['end_date']
+        categories = data.get('categories', [])
+    except (json.JSONDecodeError, KeyError):
+        return JsonResponse({'error': 'Invalid JSON or missing required fields (start_date, end_date).'}, status=400)
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+    date_filter = Q(start_date__lte=end_date) & (Q(end_date__gte=start_date) | Q(end_date__isnull=True, start_date__gte=start_date))
+    queryset = Event.objects.filter(date_filter).select_related('category')
+
+    if categories and isinstance(categories, list):
+        category_q_filter = Q()
+        for category_name in set(categories):
+            if category_name.lower() == 'acm':
+                category_q_filter |= ~Q(category__name__iexact='college')
+            elif category_name.lower() == 'non-acm':
+                category_q_filter |= Q(category__name__iexact='college')
+            else:
+                category_q_filter |= Q(category__name__iexact=category_name)
+        
+        if category_q_filter:
+            queryset = queryset.filter(category_q_filter)
+
+    response_data = []
+    for event in queryset:
+        response_data.append({
+            "id": event.id,
+            "title": event.title,
+            "description": event.description,
+            "start_date": event.start_date.isoformat(),
+            "end_date": event.end_date.isoformat() if event.end_date else None,
+            "location": event.location,
+            "category": event.category.name if event.category else "Uncategorized",
+            "color": event.category.color if event.category else "#4A5568"
+        })
+
+    return JsonResponse(response_data, safe=False)
 
 @login_required
 def calendar_view(request):
