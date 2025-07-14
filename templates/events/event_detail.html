@@ -1,107 +1,137 @@
-{% extends "base.html" %}
+{% extends "events/base.html" %}
 
 {% block title %}{{ event.title }} - ChapterOS{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="bg-neutral-900 rounded-xl shadow-lg border border-neutral-700 overflow-hidden">
-        <div class="p-6 md:p-8">
-            {% if event.category %}
-                <span class="inline-block px-3 py-1 text-sm font-semibold rounded-full mb-4" style="background-color: {{ event.category.color|default:'#4a5568' }}; color: #fff;">
-                    {{ event.category.name }}
-                </span>
-            {% endif %}
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">{{ event.title }}</h1>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-neutral-300 mb-6">
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-orange-400 mt-1">calendar_month</span>
-                    <div>
-                        <h2 class="font-semibold text-white">Date</h2>
-                        <p>{{ event.start_date|date:"l, F j, Y" }}{% if event.end_date and event.end_date != event.start_date %} to {{ event.end_date|date:"l, F j, Y" }}{% endif %}</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-orange-400 mt-1">schedule</span>
-                    <div>
-                        <h2 class="font-semibold text-white">Time</h2>
-                        <p>
-                            {% if event.start_time %}
-                                From {{ event.start_time|time:"g:i A" }}{% if event.end_time %} to {{ event.end_time|time:"g:i A" }}{% endif %}
-                            {% else %}
-                                Not specified
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-                {% if event.location %}
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-orange-400 mt-1">location_on</span>
-                    <div>
-                        <h2 class="font-semibold text-white">Location</h2>
-                        <p>{{ event.location }}</p>
-                    </div>
-                </div>
-                {% endif %}
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-orange-400 mt-1">person</span>
-                    <div>
-                        <h2 class="font-semibold text-white">Created By</h2>
-                        <p>{{ event.created_by.get_full_name|default:event.created_by.username }}</p>
-                    </div>
-                </div>
-            </div>
-
-            {% if event.description %}
-            <div class="border-t border-neutral-800 pt-6">
-                <h2 class="text-xl font-semibold text-white mb-3">About this Event</h2>
-                <div class="prose prose-invert text-neutral-300 max-w-none">
-                    {{ event.description|linebreaks }}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="mt-8">
-        <div class="bg-neutral-900 rounded-xl shadow-lg border border-neutral-700">
-            <div class="p-6 md:p-8">
-                <h2 class="text-xl font-semibold text-white mb-4">Event History</h2>
-                {% if history_logs %}
-                    <ul class="space-y-4">
-                        {% for log in history_logs %}
-                            <li class="flex items-start space-x-3 text-sm">
-                                <span class="material-symbols-outlined text-neutral-500 mt-0.5">history</span>
-                                <div class="flex-1">
-                                    <p class="text-neutral-300">
-                                        <span class="font-semibold text-white">{{ log.user.get_full_name|default:log.user.username|default:"System" }}</span>
-                                        {% if log.action == 'created' %}
-                                            created the event.
-                                        {% elif log.action == 'updated' %}
-                                            updated the <span class="font-semibold text-orange-400">{{ log.field_changed }}</span>
-                                            from <code class="text-red-400 bg-red-900/50 px-1 py-0.5 rounded">"{{ log.old_value }}"</code>
-                                            to <code class="text-green-400 bg-green-900/50 px-1 py-0.5 rounded">"{{ log.new_value }}"</code>.
-                                        {% else %}
-                                            performed action: {{ log.action }}.
-                                        {% endif %}
-                                    </p>
-                                    <p class="text-xs text-neutral-500 mt-1">{{ log.timestamp|date:"F j, Y, g:i A" }}</p>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-neutral-500">No history recorded for this event.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-6 text-center">
-        <a href="{% url 'events:calendar' %}" class="text-orange-500 hover:text-orange-400 transition-colors font-semibold inline-flex items-center gap-2">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'events:calendar' %}" class="text-orange-500 hover:text-orange-400 transition-colors font-semibold inline-flex items-center gap-2 text-sm">
             <span class="material-symbols-outlined">arrow_back</span>
             Back to Calendar
         </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+            <div class="bg-gradient-to-br from-neutral-900 to-black rounded-xl shadow-2xl border border-neutral-800 overflow-hidden">
+                <div class="p-6 md:p-8">
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                        {% if event.category %}
+                            <span class="inline-block px-3 py-1 text-sm font-semibold rounded-full" style="background-color: {{ event.category.color|default:'#4a5568' }}; color: #fff;">
+                                {{ event.category.name }}
+                            </span>
+                        {% endif %}
+                        <span class="text-sm font-medium uppercase tracking-wider text-neutral-400">{{ event.get_status_display }}</span>
+                    </div>
+                    
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">{{ event.title }}</h1>
+
+                    {% with academic_years=event.academic_years.all %}
+                    {% if academic_years %}
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        {% for year in academic_years %}
+                            <span class="px-2 py-1 bg-orange-900/50 text-orange-300 text-xs font-medium rounded-md border border-orange-800 inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">school</span>
+                                {{ year.get_name_display }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    {% if event.description %}
+                    <div class="prose prose-invert text-neutral-300 max-w-none border-t border-neutral-800 pt-6">
+                        {{ event.description|linebreaks }}
+                    </div>
+                    {% else %}
+                    <p class="text-neutral-500 italic border-t border-neutral-800 pt-6">No description provided for this event.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-8 bg-neutral-900/50 rounded-xl border border-neutral-800">
+                <div class="p-6 md:p-8">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-neutral-400">history</span>
+                        Event History
+                    </h2>
+                    {% if history_logs %}
+                        <ul class="space-y-4">
+                            {% for log in history_logs %}
+                                <li class="flex items-start space-x-3 text-sm">
+                                    <div class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center flex-shrink-0 mt-1">
+                                        <span class="material-symbols-outlined text-neutral-400 text-base">
+                                            {% if log.action == 'created' %}add{% elif log.action == 'updated' %}edit{% else %}info{% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-neutral-300">
+                                            <span class="font-semibold text-white">{{ log.user.get_full_name|default:log.user.username|default:"System" }}</span>
+                                            {% if log.action == 'created' %}
+                                                created the event.
+                                            {% elif log.action == 'updated' %}
+                                                updated the <span class="font-semibold text-orange-400">{{ log.field_changed }}</span>
+                                                from <code class="text-red-400 bg-red-900/50 px-1 py-0.5 rounded">"{{ log.old_value }}"</code>
+                                                to <code class="text-green-400 bg-green-900/50 px-1 py-0.5 rounded">"{{ log.new_value }}"</code>.
+                                            {% else %}
+                                                performed action: {{ log.action }}.
+                                            {% endif %}
+                                        </p>
+                                        <p class="text-xs text-neutral-500 mt-1">{{ log.timestamp|date:"F j, Y, g:i A" }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-neutral-500">No history recorded for this event.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-neutral-900/50 rounded-xl border border-neutral-800 p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">Details</h3>
+                <ul class="space-y-4 text-sm">
+                    <li class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-orange-400 mt-1">calendar_month</span>
+                        <div>
+                            <h4 class="font-semibold text-neutral-400">Date</h4>
+                            <p class="text-white">{{ event.start_date|date:"l, F j, Y" }}{% if event.end_date and event.end_date != event.start_date %} to {{ event.end_date|date:"l, F j, Y" }}{% endif %}</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-orange-400 mt-1">schedule</span>
+                        <div>
+                            <h4 class="font-semibold text-neutral-400">Time</h4>
+                            <p class="text-white">
+                                {% if event.start_time %}
+                                    From {{ event.start_time|time:"g:i A" }}{% if event.end_time %} to {{ event.end_time|time:"g:i A" }}{% endif %}
+                                {% else %}
+                                    Not specified
+                                {% endif %}
+                            </p>
+                        </div>
+                    </li>
+                    {% if event.location %}
+                    <li class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-orange-400 mt-1">location_on</span>
+                        <div>
+                            <h4 class="font-semibold text-neutral-400">Location</h4>
+                            <p class="text-white">{{ event.location }}</p>
+                        </div>
+                    </li>
+                    {% endif %}
+                    <li class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-orange-400 mt-1">person</span>
+                        <div>
+                            <h4 class="font-semibold text-neutral-400">Created By</h4>
+                            <p class="text-white">{{ event.created_by.get_full_name|default:event.created_by.username }}</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

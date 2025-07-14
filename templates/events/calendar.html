@@ -56,6 +56,7 @@
                         <th scope="col" class="px-6 py-3">Date</th>
                         <th scope="col" class="px-6 py-3">Event</th>
                         <th scope="col" class="px-6 py-3">Category</th>
+                        <th scope="col" class="px-6 py-3">Academic Years</th>
                         <th scope="col" class="px-6 py-3">Status</th>
                     </tr>
                 </thead>
@@ -100,6 +101,13 @@
                         <p id="event-details-createdby" class="text-neutral-300"></p>
                     </div>
                 </div>
+                <div id="event-details-academic-years-container" class="flex items-start space-x-3">
+                    <span class="material-symbols-outlined text-neutral-400 mt-0.5">school</span>
+                    <div>
+                        <p class="font-semibold text-white">Academic Years</p>
+                        <div id="event-details-academic-years" class="flex flex-wrap gap-1 mt-1"></div>
+                    </div>
+                </div>
             </div>
             <div>
                 <p class="font-semibold text-white text-sm mb-1">Description</p>
@@ -107,6 +115,7 @@
             </div>
             {% if is_editor %}
             <div class="border-t border-neutral-800 pt-4 space-y-2">
+                <a id="view-event-btn" href="#" class="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg">View Full Details</a>
                 <button id="edit-event-btn" class="w-full flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg">Edit Event</button>
                 <button id="duplicate-event-btn" class="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 py-2 rounded-lg">Duplicate Event</button>
                 <button id="delete-event-btn" class="w-full bg-red-800/50 hover:bg-red-800/80 text-red-300 py-2 rounded-lg">Delete Event</button>
@@ -163,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const showLoader = () => {
-        eventsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div></td></tr>`;
+        eventsTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div></td></tr>`;
     };
 
     const fetchAPI = async (url) => {
@@ -193,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
             state.events = data;
             dataCache[cacheKey] = data;
         } else {
-            eventsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-red-400 text-center">${error}</td></tr>`;
+            eventsTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-red-400 text-center">${error}</td></tr>`;
             state.events = [];
         }
     };
@@ -214,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         if (filteredEvents.length === 0) {
-            eventsTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-neutral-500">No events found for this period.</td></tr>`;
+            eventsTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-neutral-500">No events found for this period.</td></tr>`;
             return;
         }
 
@@ -235,6 +244,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            const academicYearsHTML = event.academic_years_display.length > 0
+                ? event.academic_years_display.map(ay => `<span class="px-2 py-0.5 bg-orange-900/50 text-orange-300 text-xs font-medium rounded-md border border-orange-800">${ay.name}</span>`).join(' ')
+                : '<span class="text-neutral-500">-</span>';
+
             const isSelected = event.id === state.selectedEventId;
 
             return `
@@ -242,9 +255,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="px-6 py-4 font-medium text-white whitespace-nowrap">
                         ${dateDisplay}<br><span class="text-neutral-500">${timeDisplay}</span>
                     </td>
-                    <td class="px-6 py-4">${event.title}</td>
+                    <td class="px-6 py-4">
+                        <a href="/events/${event.id}/" class="font-semibold text-white hover:text-orange-400 transition-colors">${event.title}</a>
+                    </td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: ${event.category_color};">${event.category_name}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">${academicYearsHTML}</div>
                     </td>
                     <td class="px-6 py-4">
                         <span class="font-semibold">${event.get_status_display}</span>
@@ -294,6 +312,19 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('event-details-location').textContent = event.location || 'Not specified';
         document.getElementById('event-details-createdby').textContent = event.created_by_name;
         document.getElementById('event-details-description').innerHTML = event.description ? event.description.replace(/\n/g, '<br>') : 'No description provided.';
+
+        const academicYearsContainer = document.getElementById('event-details-academic-years-container');
+        const academicYearsDiv = document.getElementById('event-details-academic-years');
+        if (event.academic_years_display && event.academic_years_display.length > 0) {
+            academicYearsDiv.innerHTML = event.academic_years_display.map(ay => `<span class="px-2 py-1 bg-orange-900/50 text-orange-300 text-xs font-medium rounded-md border border-orange-800">${ay.display}</span>`).join('');
+            academicYearsContainer.classList.remove('hidden');
+        } else {
+            academicYearsContainer.classList.add('hidden');
+        }
+
+        if (IS_EDITOR) {
+            document.getElementById('view-event-btn').href = `/events/${event.id}/`;
+        }
 
         rightPanelEmpty.classList.add('hidden');
         rightPanelDetails.classList.remove('hidden');
@@ -419,7 +450,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (field.type === 'checkbox') {
                         field.checked = data[key];
                     } else if (key === 'academic_years') {
-                        // Handle ManyToManyField for academic_years
                         field.querySelectorAll('option').forEach(option => {
                             option.selected = data[key].includes(parseInt(option.value));
                         });
@@ -484,7 +514,9 @@ document.addEventListener('DOMContentLoaded', function() {
         eventsTableBody.addEventListener('click', (e) => {
             const row = e.target.closest('tr');
             if (row && row.dataset.eventId) {
-                renderEventDetails(parseInt(row.dataset.eventId));
+                if (e.target.tagName !== 'A') {
+                    renderEventDetails(parseInt(row.dataset.eventId));
+                }
             }
         });
 

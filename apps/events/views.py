@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Event, EventCategory, EventHistory
+from .models import Event, EventCategory, EventHistory, AcademicYear
 from .forms import EventForm, BulkUploadForm
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
@@ -12,6 +12,8 @@ import csv
 import io
 import json
 import random
+import pandas as pd
+
 
 def log_event_history(event, user, action, changes=None):
     if action == 'created':
@@ -73,16 +75,13 @@ def api_bulk_add_categories(request):
         return JsonResponse({'error': str(e)}, status=400)
 
     created_count = 0
-    # Get existing category names to avoid case-sensitive duplicates
     existing_names_lower = set(name.lower() for name in EventCategory.objects.values_list('name', flat=True))
 
     new_categories_to_create = []
     for name in category_names:
         if name.strip() and name.strip().lower() not in existing_names_lower:
-            # Generate a random color
             color = f"#{random.randint(0, 0xFFFFFF):06x}"
             new_categories_to_create.append(EventCategory(name=name.strip(), color=color))
-            # Add to the set to prevent creating duplicates from the same request
             existing_names_lower.add(name.strip().lower())
 
     if new_categories_to_create:
@@ -125,7 +124,7 @@ def api_events(request):
         start_date = start_of_month - timedelta(days=start_of_month.isoweekday() % 7)
         end_date = start_date + timedelta(days=41)
 
-    queryset = Event.objects.select_related('category', 'created_by').filter(
+    queryset = Event.objects.select_related('category', 'created_by').prefetch_related('academic_years').filter(
         Q(start_date__lte=end_date, end_date__gte=start_date) |
         Q(start_date__range=(start_date, end_date), end_date__isnull=True)
     ).order_by('start_date', 'start_time')
@@ -135,6 +134,8 @@ def api_events(request):
 
     events_data = []
     for event in queryset:
+        academic_years_data = [{'id': ay.id, 'name': ay.name, 'display': ay.get_name_display()} for ay in event.academic_years.all()]
+        
         events_data.append({
             'id': event.id,
             'title': event.title,
@@ -152,7 +153,8 @@ def api_events(request):
             'category_color': event.category.color if event.category else '#4A5568',
             'created_by_name': event.created_by.get_full_name() or event.created_by.username,
             'created_by_id': event.created_by.id,
-            'academic_years': [ay.id for ay in event.academic_years.all()],
+            'academic_years': [ay['id'] for ay in academic_years_data],
+            'academic_years_display': academic_years_data,
         })
 
     return JsonResponse(events_data, safe=False)
@@ -199,7 +201,15 @@ def add_event(request):
             event = form.save(commit=False)
             event.created_by = request.user
             event.save()
+            form.save_m2m()
             log_event_history(event, request.user, 'created')
+            
+            academic_years = form.cleaned_data.get('academic_years')
+            if academic_years.exists():
+                new_value = ', '.join(sorted(ay.name for ay in academic_years))
+                changes = {'Academic Years': {'old': 'None', 'new': new_value}}
+                log_event_history(event, request.user, 'updated', changes=changes)
+
             messages.success(request, 'Event added successfully.')
             return redirect('events:calendar')
         else:
@@ -219,11 +229,11 @@ def edit_event(request, event_id):
             if form.has_changed():
                 for field_name in form.changed_data:
                     if field_name == 'academic_years':
-                        old_academic_years = set(event.academic_years.values_list('id', flat=True))
-                        new_academic_years = set(form.cleaned_data['academic_years'].values_list('id', flat=True))
+                        old_academic_years = set(event.academic_years.values_list('name', flat=True))
+                        new_academic_years = set(form.cleaned_data['academic_years'].values_list('name', flat=True))
                         if old_academic_years != new_academic_years:
-                            old_value = ', '.join(AcademicYear.objects.filter(id__in=old_academic_years).values_list('name', flat=True)) or "None"
-                            new_value = ', '.join(AcademicYear.objects.filter(id__in=new_academic_years).values_list('name', flat=True)) or "None"
+                            old_value = ', '.join(sorted(list(old_academic_years))) or "None"
+                            new_value = ', '.join(sorted(list(new_academic_years))) or "None"
                             changes['Academic Years'] = {'old': old_value, 'new': new_value}
                     else:
                         old_value = form.initial.get(field_name)
@@ -275,45 +285,56 @@ def bulk_upload_events(request):
         if form.is_valid():
             csv_file = request.FILES['csv_file']
             
-            if not csv_file.read():
-                messages.error(request, "The submitted file is empty.")
-                return redirect('events:bulk_upload')
-            csv_file.seek(0)
-
             try:
-                decoded_file = csv_file.read().decode('utf-8')
-                io_string = io.StringIO(decoded_file)
-                reader = csv.DictReader(io_string)
-                
-                expected_headers = ['start_date', 'end_date', 'start_time', 'end_time', 'title', 'description', 'location', 'category']
-                if not all(header in reader.fieldnames for header in ['start_date', 'title', 'category']):
-                    messages.error(request, "CSV file is missing one or more required headers: start_date, title, category.")
+                df = pd.read_csv(csv_file, keep_default_na=False, dtype=str)
+
+                if df.empty:
+                    messages.info(request, "The submitted CSV file is empty or contains only headers.")
+                    return redirect('events:bulk_upload')
+
+                required_headers = ['start_date', 'title', 'category']
+                if not all(header in df.columns for header in required_headers):
+                    missing = ", ".join([h for h in required_headers if h not in df.columns])
+                    messages.error(request, f"CSV file is missing one or more required headers: {missing}.")
                     return redirect('events:bulk_upload')
 
                 categories = {cat.name.lower(): cat for cat in EventCategory.objects.all()}
+                academic_years_map = {ay.name: ay for ay in AcademicYear.objects.all()}
+                
                 created_count = 0
                 errors = []
 
-                for i, row in enumerate(reader, start=2):
+                for index, row in df.iterrows():
+                    row_num = index + 2 
                     try:
                         title = row.get('title', '').strip()
                         start_date_str = row.get('start_date', '').strip()
                         category_name = row.get('category', '').strip()
 
                         if not title:
-                            errors.append(f"Row {i}: 'title' is required.")
+                            errors.append(f"Row {row_num}: 'title' is required.")
                             continue
                         if not start_date_str:
-                            errors.append(f"Row {i}: 'start_date' is required.")
+                            errors.append(f"Row {row_num}: 'start_date' is required.")
                             continue
                         if not category_name:
-                            errors.append(f"Row {i}: 'category' is required.")
+                            errors.append(f"Row {row_num}: 'category' is required.")
                             continue
                         
                         category_obj = categories.get(category_name.lower())
                         if not category_obj:
-                            errors.append(f"Row {i}: Category '{category_name}' does not exist.")
+                            errors.append(f"Row {row_num}: Category '{category_name}' does not exist.")
                             continue
+
+                        academic_years_str = row.get('academic_years', '').strip()
+                        years_to_add = []
+                        if academic_years_str:
+                            year_codes = [code.strip().upper() for code in academic_years_str.split(',') if code.strip()]
+                            invalid_codes = [code for code in year_codes if code not in academic_years_map]
+                            if invalid_codes:
+                                errors.append(f"Row {row_num}: Invalid academic year code(s): {', '.join(invalid_codes)}. Valid codes are: {', '.join(academic_years_map.keys())}.")
+                                continue
+                            years_to_add = [academic_years_map[code] for code in year_codes]
 
                         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
                         end_date_str = row.get('end_date', '').strip()
@@ -337,16 +358,26 @@ def bulk_upload_events(request):
                             created_by=request.user,
                         )
                         event.save()
+                        
                         log_event_history(event, request.user, 'created')
+
+                        if years_to_add:
+                            event.academic_years.set(years_to_add)
+                            new_value = ', '.join(sorted([ay.name for ay in years_to_add]))
+                            changes = {'Academic Years': {'old': 'None', 'new': new_value}}
+                            log_event_history(event, request.user, 'updated', changes=changes)
+
                         created_count += 1
 
-                    except ValueError:
-                        errors.append(f"Row {i}: Data format error. Ensure dates are YYYY-MM-DD and times are HH:MM.")
+                    except ValueError as e:
+                        errors.append(f"Row {row_num}: Data format error. Ensure dates are YYYY-MM-DD and times are HH:MM. Details: {e}")
                     except Exception as e:
-                        errors.append(f"Row {i}: An unexpected error occurred: {e}")
+                        errors.append(f"Row {row_num}: An unexpected error occurred: {e}")
 
                 if created_count > 0:
                     messages.success(request, f"Successfully uploaded {created_count} events.")
+                if not created_count and not errors:
+                    messages.info(request, "The CSV file was processed, but no new events were created.")
                 if errors:
                     for error in errors:
                         messages.error(request, error)
@@ -372,6 +403,6 @@ def download_sample_csv(request):
     response['Content-Disposition'] = 'attachment; filename="sample_events.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['start_date', 'end_date', 'start_time', 'end_time', 'title', 'description', 'location', 'category'])
+    writer.writerow(['start_date', 'end_date', 'start_time', 'end_time', 'title', 'description', 'location', 'category', 'academic_years'])
     
     return response
