@@ -124,8 +124,12 @@
                 </div>
             </div>
 
-            <!-- Upload Button -->
-            <div class="flex justify-end pt-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end items-center pt-4 gap-4">
+                <button id="add-categories-btn" type="button" class="hidden w-full sm:w-auto flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 disabled:bg-neutral-600 disabled:cursor-not-allowed disabled:opacity-50">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Add Missing & Re-validate</span>
+                </button>
                 <button id="upload-button" type="submit" class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 disabled:bg-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 transform" disabled>
                     <span id="upload-icon" class="material-symbols-outlined">upload_file</span>
                     <span id="upload-text">Upload and Process File</span>
@@ -164,6 +168,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('id_csv_file');
     const uploadButton = document.getElementById('upload-button');
+    const addCategoriesBtn = document.getElementById('add-categories-btn');
     const previewContainer = document.getElementById('preview-container');
     const previewHeader = document.getElementById('preview-header');
     const previewBody = document.getElementById('preview-body');
@@ -179,8 +184,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const alertContainer = document.getElementById('alert-container');
     const uploadIcon = document.getElementById('upload-icon');
     const uploadText = document.getElementById('upload-text');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     let validCategories = [];
+    let missingCategories = new Set();
     let isProcessing = false;
 
     // Alert System
@@ -190,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const alertTitle = document.getElementById('alert-title');
         const alertMessage = document.getElementById('alert-message');
         
-        // Reset classes
         alertContent.className = 'p-4 rounded-lg border flex items-start gap-3';
         
         switch(type) {
@@ -219,23 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
         alertTitle.textContent = title;
         alertMessage.textContent = message;
         alertContainer.classList.remove('hidden');
-        
-        // Auto-hide success messages after 5 seconds
-        if (type === 'success') {
-            setTimeout(() => {
-                hideAlert();
-            }, 5000);
-        }
     }
 
     function hideAlert() {
         alertContainer.classList.add('hidden');
     }
 
-    // Close alert button
     document.getElementById('alert-close').addEventListener('click', hideAlert);
 
-    // File size formatter
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -244,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    // File selection display
     function showFileSelected(file) {
         fileUploadContent.classList.add('hidden');
         fileSelectedContent.classList.remove('hidden');
@@ -261,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fileDropZone.classList.add('border-neutral-600');
     }
 
-    // Remove file button
     removeFileBtn.addEventListener('click', function() {
         fileInput.value = '';
         hideFileSelected();
@@ -269,26 +264,17 @@ document.addEventListener('DOMContentLoaded', function() {
         hideAlert();
     });
 
-    // Reset preview
     function resetPreview() {
         previewContainer.classList.add('hidden');
         uploadButton.disabled = true;
+        addCategoriesBtn.classList.add('hidden');
         uploadIcon.textContent = 'upload_file';
         uploadText.textContent = 'Upload and Process File';
     }
 
-    // Drag and drop
-    fileDropZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        fileDropZone.classList.add('border-orange-500', 'bg-orange-900/10');
-    });
-
-    fileDropZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        fileDropZone.classList.remove('border-orange-500', 'bg-orange-900/10');
-    });
-
-    fileDropZone.addEventListener('drop', function(e) {
+    fileDropZone.addEventListener('dragover', (e) => { e.preventDefault(); fileDropZone.classList.add('border-orange-500', 'bg-orange-900/10'); });
+    fileDropZone.addEventListener('dragleave', (e) => { e.preventDefault(); fileDropZone.classList.remove('border-orange-500', 'bg-orange-900/10'); });
+    fileDropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         fileDropZone.classList.remove('border-orange-500', 'bg-orange-900/10');
         const files = e.dataTransfer.files;
@@ -302,22 +288,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    fileDropZone.addEventListener('click', function() {
-        fileInput.click();
-    });
-
-    // Prevent default file input styling
+    fileDropZone.addEventListener('click', () => fileInput.click());
     fileInput.style.display = 'none';
 
     const fetchCategories = async () => {
         try {
             const response = await fetch("{% url 'events:api_event_categories' %}");
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            validCategories = data.map(cat => cat.name);
+            validCategories = data.map(cat => cat.name.toLowerCase());
         } catch (error) {
             console.error("Error fetching categories:", error);
             showAlert('error', 'Category Fetch Error', 'Could not fetch event categories for validation. Please try again.');
@@ -330,29 +309,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         const timeRegex = /^\d{2}:\d{2}(:\d{2})?$/;
 
-        if (!row.title || row.title.trim() === '') {
-            errors.push('Title is required.');
-        }
-        if (!row.start_date || row.start_date.trim() === '') {
+        if (!row.title || !row.title.trim()) errors.push('Title is required.');
+        if (!row.start_date || !row.start_date.trim()) {
             errors.push('Start date is required.');
         } else if (!dateRegex.test(row.start_date.trim())) {
             errors.push('Start date format must be YYYY-MM-DD.');
         }
-        if (!row.category || row.category.trim() === '') {
+        if (!row.category || !row.category.trim()) {
             errors.push('Category is required.');
-        } else if (validCategories.length > 0 && !validCategories.includes(row.category.trim())) {
+        } else if (!validCategories.includes(row.category.trim().toLowerCase())) {
             errors.push(`Category "${row.category.trim()}" does not exist.`);
+            missingCategories.add(row.category.trim());
         }
 
-        if (row.end_date && row.end_date.trim() !== '' && !dateRegex.test(row.end_date.trim())) {
-            errors.push('End date format must be YYYY-MM-DD.');
-        }
-        if (row.start_time && row.start_time.trim() !== '' && !timeRegex.test(row.start_time.trim())) {
-            errors.push('Start time format must be HH:MM.');
-        }
-        if (row.end_time && row.end_time.trim() !== '' && !timeRegex.test(row.end_time.trim())) {
-            errors.push('End time format must be HH:MM.');
-        }
+        if (row.end_date && row.end_date.trim() && !dateRegex.test(row.end_date.trim())) errors.push('End date format must be YYYY-MM-DD.');
+        if (row.start_time && row.start_time.trim() && !timeRegex.test(row.start_time.trim())) errors.push('Start time format must be HH:MM.');
+        if (row.end_time && row.end_time.trim() && !timeRegex.test(row.end_time.trim())) errors.push('End time format must be HH:MM.');
 
         return errors;
     };
@@ -365,14 +337,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // File size validation (10MB limit)
         if (file.size > 10 * 1024 * 1024) {
             showAlert('error', 'File Too Large', 'Please select a file smaller than 10MB.');
             fileInput.value = '';
             return;
         }
-
-        // File type validation
         if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
             showAlert('error', 'Invalid File Type', 'Please select a CSV file.');
             fileInput.value = '';
@@ -388,29 +357,22 @@ document.addEventListener('DOMContentLoaded', function() {
         previewBody.innerHTML = '';
         previewSummary.innerHTML = '<div class="flex items-center gap-2"><div class="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>Validating data...</div>';
         uploadButton.disabled = true;
+        addCategoriesBtn.classList.add('hidden');
+        missingCategories.clear();
 
         try {
             await fetchCategories();
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const text = e.target.result;
                     const rows = text.split(/\r\n|\n/).filter(row => row.trim() !== '');
-                    
-                    if (rows.length < 2) {
-                        throw new Error('CSV file must contain a header row and at least one data row.');
-                    }
+                    if (rows.length < 2) throw new Error('CSV file must contain a header row and at least one data row.');
 
                     const headers = rows[0].split(',').map(h => h.trim());
                     const requiredHeaders = ['start_date', 'title', 'category'];
-                    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+                    if (requiredHeaders.some(h => !headers.includes(h))) throw new Error(`CSV is missing required headers: ${requiredHeaders.filter(h => !headers.includes(h)).join(', ')}.`);
 
-                    if (missingHeaders.length > 0) {
-                        throw new Error(`CSV is missing required headers: ${missingHeaders.join(', ')}.`);
-                    }
-
-                    // Build table header
                     previewHeader.innerHTML = '';
                     headers.forEach(header => {
                         const th = document.createElement('th');
@@ -429,59 +391,50 @@ document.addEventListener('DOMContentLoaded', function() {
                     const dataRows = rows.slice(1);
                     previewBody.innerHTML = '';
 
-                    dataRows.forEach((rowStr, index) => {
+                    dataRows.forEach((rowStr) => {
                         const values = rowStr.split(',');
-                        const rowData = headers.reduce((obj, header, index) => {
-                            obj[header] = values[index] ? values[index].trim() : '';
-                            return obj;
-                        }, {});
-
+                        const rowData = headers.reduce((obj, header, i) => ({ ...obj, [header]: values[i] ? values[i].trim() : '' }), {});
                         const errors = validateRow(rowData);
                         const tr = document.createElement('tr');
                         tr.className = 'border-b border-neutral-800 hover:bg-neutral-800/30 transition-colors';
-
                         if (errors.length > 0) {
                             errorCount++;
                             tr.classList.add('bg-red-900/20');
                         } else {
                             tr.classList.add('bg-green-900/10');
                         }
-
                         headers.forEach(header => {
                             const td = document.createElement('td');
                             td.className = 'px-4 py-3 text-sm';
                             td.textContent = rowData[header] || '-';
                             tr.appendChild(td);
                         });
-
                         const tdError = document.createElement('td');
                         tdError.className = 'px-4 py-3 text-sm';
-                        if (errors.length > 0) {
-                            tdError.innerHTML = `<div class="space-y-1">${errors.map(e => `<div class="text-red-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span>${e}</div>`).join('')}</div>`;
-                        } else {
-                            tdError.innerHTML = `<div class="text-green-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span>Valid</div>`;
-                        }
+                        tdError.innerHTML = errors.length > 0
+                            ? `<div class="space-y-1">${errors.map(e => `<div class="text-red-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">error</span>${e}</div>`).join('')}</div>`
+                            : `<div class="text-green-400 text-xs flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span>Valid</div>`;
                         tr.appendChild(tdError);
                         previewBody.appendChild(tr);
                     });
 
-                    // Update summary
-                    let summaryMessage = '';
                     if (errorCount > 0) {
-                        summaryMessage = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="font-semibold text-red-400">${errorCount} of ${dataRows.length} rows have errors</span></div>`;
+                        previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="font-semibold text-red-400">${errorCount} of ${dataRows.length} rows have errors</span></div>`;
                         uploadButton.disabled = true;
-                        showAlert('warning', 'Validation Errors Found', `${errorCount} rows have validation errors. Please fix them in your CSV and re-upload.`);
+                        if (missingCategories.size > 0) {
+                            addCategoriesBtn.classList.remove('hidden');
+                            showAlert('warning', 'Missing Categories Found', `Your file contains ${missingCategories.size} new categories. Click the "Add Missing" button to create them automatically.`);
+                        } else {
+                            showAlert('warning', 'Validation Errors Found', 'Please fix the errors in your CSV and re-upload.');
+                        }
                     } else {
-                        summaryMessage = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400">check_circle</span><span class="font-semibold text-green-400">All ${dataRows.length} rows validated successfully</span></div>`;
+                        previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-green-400">check_circle</span><span class="font-semibold text-green-400">All ${dataRows.length} rows validated successfully</span></div>`;
                         uploadButton.disabled = false;
                         uploadIcon.textContent = 'publish';
                         uploadText.textContent = 'Upload Events';
                         showAlert('success', 'Validation Complete', `All ${dataRows.length} rows are valid and ready for upload.`);
                     }
-                    previewSummary.innerHTML = summaryMessage;
-
                 } catch (error) {
-                    console.error('Error processing CSV:', error);
                     previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">${error.message}</span></div>`;
                     previewHeader.innerHTML = '<th class="px-4 py-3 text-center text-red-400" colspan="100%">Error processing file</th>';
                     previewBody.innerHTML = '';
@@ -492,47 +445,61 @@ document.addEventListener('DOMContentLoaded', function() {
                     processingIndicator.classList.add('hidden');
                 }
             };
-
             reader.onerror = () => {
-                const errorMsg = 'Error reading file. Please try again.';
-                previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">${errorMsg}</span></div>`;
-                uploadButton.disabled = true;
-                showAlert('error', 'File Read Error', errorMsg);
+                showAlert('error', 'File Read Error', 'Error reading file. Please try again.');
                 isProcessing = false;
                 processingIndicator.classList.add('hidden');
             };
-
             reader.readAsText(file);
-
         } catch (error) {
-            console.error('Error in file processing:', error);
-            previewSummary.innerHTML = `<div class="flex items-center gap-2"><span class="material-symbols-outlined text-red-400">error</span><span class="text-red-400">Failed to process file</span></div>`;
-            uploadButton.disabled = true;
             showAlert('error', 'Processing Error', 'Failed to process file. Please try again.');
             isProcessing = false;
             processingIndicator.classList.add('hidden');
         }
     };
 
+    addCategoriesBtn.addEventListener('click', async () => {
+        addCategoriesBtn.disabled = true;
+        addCategoriesBtn.querySelector('span:last-child').textContent = 'Adding...';
+
+        try {
+            const response = await fetch("{% url 'events:api_bulk_add_categories' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ categories: Array.from(missingCategories) }),
+            });
+            if (!response.ok) throw new Error('Failed to add categories.');
+            
+            const result = await response.json();
+            showAlert('success', 'Categories Added', `${result.created_count} new categories were added. Re-validating your file now.`);
+            
+            // Re-trigger validation
+            await handleFileSelect({ target: { files: [fileInput.files[0]] } });
+
+        } catch (error) {
+            console.error('Error adding categories:', error);
+            showAlert('error', 'API Error', 'Could not add new categories. Please try again.');
+        } finally {
+            addCategoriesBtn.disabled = false;
+            addCategoriesBtn.querySelector('span:last-child').textContent = 'Add Missing & Re-validate';
+        }
+    });
+
     fileInput.addEventListener('change', handleFileSelect);
 
     form.addEventListener('submit', (e) => {
         if (uploadButton.disabled || isProcessing) {
             e.preventDefault();
-            if (isProcessing) {
-                showAlert('warning', 'Processing in Progress', 'Please wait for file processing to complete.');
-            } else {
-                showAlert('warning', 'Cannot Upload', 'Please fix the errors in your CSV file or select a valid file.');
-            }
+            showAlert('warning', 'Cannot Upload', isProcessing ? 'Please wait for processing to complete.' : 'Please fix errors or select a valid file.');
             return;
         }
-
-        // Show uploading state
         uploadButton.disabled = true;
         uploadIcon.textContent = 'cloud_upload';
         uploadText.textContent = 'Uploading...';
         uploadButton.classList.add('animate-pulse');
-        
         showAlert('info', 'Upload in Progress', 'Your events are being uploaded. Please wait...');
     });
 });

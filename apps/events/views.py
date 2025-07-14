@@ -10,6 +10,8 @@ from django.db.models import Q, Model
 from functools import wraps
 import csv
 import io
+import json
+import random
 
 def log_event_history(event, user, action, changes=None):
     if action == 'created':
@@ -55,6 +57,39 @@ def calendar_view(request):
         'is_editor': is_editor(request.user)
     }
     return render(request, 'events/calendar.html', context)
+
+@user_passes_test(is_editor)
+@api_auth_required
+def api_bulk_add_categories(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        category_names = data.get('categories', [])
+        if not isinstance(category_names, list):
+            raise ValueError("Invalid data format: 'categories' must be a list.")
+    except (json.JSONDecodeError, ValueError) as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    created_count = 0
+    # Get existing category names to avoid case-sensitive duplicates
+    existing_names_lower = set(name.lower() for name in EventCategory.objects.values_list('name', flat=True))
+
+    new_categories_to_create = []
+    for name in category_names:
+        if name.strip() and name.strip().lower() not in existing_names_lower:
+            # Generate a random color
+            color = f"#{random.randint(0, 0xFFFFFF):06x}"
+            new_categories_to_create.append(EventCategory(name=name.strip(), color=color))
+            # Add to the set to prevent creating duplicates from the same request
+            existing_names_lower.add(name.strip().lower())
+
+    if new_categories_to_create:
+        EventCategory.objects.bulk_create(new_categories_to_create)
+        created_count = len(new_categories_to_create)
+
+    return JsonResponse({'message': f'Successfully created {created_count} new categories.', 'created_count': created_count})
 
 @api_auth_required
 def api_event_categories(request):
@@ -247,7 +282,7 @@ def bulk_upload_events(request):
                     messages.error(request, "CSV file is missing one or more required headers: start_date, title, category.")
                     return redirect('events:bulk_upload')
 
-                categories = {cat.name: cat for cat in EventCategory.objects.all()}
+                categories = {cat.name.lower(): cat for cat in EventCategory.objects.all()}
                 created_count = 0
                 errors = []
 
@@ -267,7 +302,8 @@ def bulk_upload_events(request):
                             errors.append(f"Row {i}: 'category' is required.")
                             continue
                         
-                        if category_name not in categories:
+                        category_obj = categories.get(category_name.lower())
+                        if not category_obj:
                             errors.append(f"Row {i}: Category '{category_name}' does not exist.")
                             continue
 
@@ -289,7 +325,7 @@ def bulk_upload_events(request):
                             start_time=start_time,
                             end_time=end_time,
                             location=row.get('location', '').strip(),
-                            category=categories[category_name],
+                            category=category_obj,
                             created_by=request.user,
                         )
                         event.save()

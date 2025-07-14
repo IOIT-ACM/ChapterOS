@@ -3,11 +3,11 @@
 {% block title %}Events Calendar - ChapterOS{% endblock %}
 
 {% block content %}
-<div class="flex h-full w-full bg-neutral-900 flex-1">
+<div class="flex h-full w-full bg-neutral-900 flex-1 overflow-hidden">
     <aside class="w-[280px] flex-shrink-0 bg-neutral-950 border-r border-neutral-800 flex flex-col p-4 space-y-6 overflow-y-auto">
         {% include "events/mini_calendar.html" %}
 
-        <div class="space-y-2">
+        <div class="space-y-2 hidden">
             <h3 class="font-semibold text-white">View Options</h3>
             <div id="view-options-panel" class="space-y-1 text-sm">
                 <label class="flex items-center space-x-2 p-2 rounded-md hover:bg-neutral-800 cursor-pointer"><input type="radio" name="view" value="month" class="text-orange-600 bg-neutral-700 border-neutral-600 focus:ring-orange-500" checked><span>Month View</span></label>
@@ -41,7 +41,7 @@
         </div>
     </aside>
 
-    <main class="flex-1 bg-black flex flex-col overflow-hidden">
+    <main class="flex-1 bg-black flex flex-col overflow-y-auto">
         <div class="flex items-center justify-between p-4 border-b border-neutral-800">
             <h2 id="main-header-date" class="text-xl font-bold text-white"></h2>
             <div class="flex items-center space-x-1">
@@ -72,7 +72,7 @@
             <p class="text-sm">Select an event to view its details.</p>
         </div>
         
-        <div id="right-panel-details" class="hidden space-y-4 h-full">
+        <div id="right-panel-details" class="hidden space-y-4">
             <div>
                 <span id="event-details-category-badge" class="text-xs font-semibold px-2 py-1 rounded-full text-white">Category</span>
                 <h2 id="event-details-title" class="text-2xl font-bold text-white mt-2"></h2>
@@ -103,7 +103,7 @@
             </div>
             <div>
                 <p class="font-semibold text-white text-sm mb-1">Description</p>
-                <div id="event-details-description" class="text-sm text-neutral-400 max-h-48 overflow-y-auto bg-neutral-900 p-2 rounded-md border border-neutral-800"></div>
+                <div id="event-details-description" class="text-sm text-neutral-400 bg-neutral-900 p-2 rounded-md border border-neutral-800"></div>
             </div>
             {% if is_editor %}
             <div class="border-t border-neutral-800 pt-4 space-y-2">
