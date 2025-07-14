@@ -95,6 +95,12 @@ source venv/bin/activate
 python3 manage.py migrate
 ```
 
+You may need to populate the database with some initial values, such as academic years. To do this, run the following command:
+
+```bash
+python3 manage.py populate_academic_years
+```
+
 #### 6. Create a Superuser
 
 To access the Django Admin panel (`/admin/`), you need to create a superuser account.

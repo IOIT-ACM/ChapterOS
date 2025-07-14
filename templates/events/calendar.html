@@ -416,8 +416,16 @@ document.addEventListener('DOMContentLoaded', function() {
             Object.keys(data).forEach(key => {
                 const field = eventForm.elements[key];
                 if (field) {
-                    if (field.type === 'checkbox') field.checked = data[key];
-                    else field.value = data[key];
+                    if (field.type === 'checkbox') {
+                        field.checked = data[key];
+                    } else if (key === 'academic_years') {
+                        // Handle ManyToManyField for academic_years
+                        field.querySelectorAll('option').forEach(option => {
+                            option.selected = data[key].includes(parseInt(option.value));
+                        });
+                    } else {
+                        field.value = data[key];
+                    }
                 }
             });
         } else {

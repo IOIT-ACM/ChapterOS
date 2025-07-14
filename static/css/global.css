@@ -19,6 +19,20 @@
   background: linear-gradient(to bottom, #fb923c, #f97316);
 }
 
+select[multiple] {
+    height: 100px;
+    background-color: #1a1a1a;
+    border: 1px solid #4b5563;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    color: #d1d5db;
+}
+select[multiple]:focus {
+    outline: none;
+    border-color: #f97316;
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
 .animate-rotate {
   animation: rotate 10s linear infinite;
 }

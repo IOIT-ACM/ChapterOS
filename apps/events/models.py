@@ -1,9 +1,22 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import Q
+
+# module‐level constant so it's available for field choices and DB constraint
+ACADEMIC_YEAR_CHOICES = [
+    ('FY', 'First Year'),
+    ('SY', 'Second Year'),
+    ('TY', 'Third Year'),
+    ('FR', 'Fourth Year'),
+]
 
 class EventCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    color = models.CharField(max_length=7, default='#FFFFFF', help_text="Hex color code, e.g., #RRGGBB")
+    color = models.CharField(
+        max_length=7,
+        default='#FFFFFF',
+        help_text="Hex color code, e.g., #RRGGBB"
+    )
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -14,6 +27,33 @@ class EventCategory(models.Model):
     class Meta:
         verbose_name_plural = "Event Categories"
 
+
+class AcademicYear(models.Model):
+    """
+    Defines exactly these four academic years.
+    """
+    name = models.CharField(
+        max_length=2,
+        choices=ACADEMIC_YEAR_CHOICES,
+        unique=True,
+        help_text="Select one of: FY, SY, TY, FR"
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Academic Year"
+        verbose_name_plural = "Academic Years"
+        constraints = [
+            models.CheckConstraint(
+                check=Q(name__in=[code for code, _ in ACADEMIC_YEAR_CHOICES]),
+                name='valid_academic_year_name'
+            )
+        ]
+
+    def __str__(self):
+        return dict(ACADEMIC_YEAR_CHOICES)[self.name]
+
+
 class Event(models.Model):
     STATUS_CHOICES = [
         ('PLANNED', 'Planned'),
@@ -21,7 +61,6 @@ class Event(models.Model):
         ('COMPLETED', 'Completed'),
         ('CANCELLED', 'Cancelled'),
     ]
-    
     PRIVACY_CHOICES = [
         ('PUBLIC', 'Public'),
         ('PRIVATE', 'Private'),
@@ -34,17 +73,70 @@ class Event(models.Model):
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True)
-    category = models.ForeignKey(EventCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_events')
-    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_events')
-    parent_event = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_events')
+    category = models.ForeignKey(
+        EventCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='events'
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='created_events'
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_events'
+    )
+    parent_event = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='child_events'
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PLANNED')
     privacy = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default='PUBLIC')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    academic_years = models.ManyToManyField(
+        AcademicYear,
+        through='EventAcademicYear',
+        related_name='events'
+    )
+
     def __str__(self):
         return self.title
+
+
+class EventAcademicYear(models.Model):
+    """
+    Junction table linking Events to one or more AcademicYears.
+    """
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='event_year_links'
+    )
+    academic_year = models.ForeignKey(
+        AcademicYear,
+        on_delete=models.CASCADE,
+        related_name='event_year_links'
+    )
+
+    class Meta:
+        unique_together = ('event', 'academic_year')
+        verbose_name = "Event–Academic Year Link"
+        verbose_name_plural = "Event–Academic Year Links"
+
+    def __str__(self):
+        return f"{self.event.title} ↔ {self.academic_year.name}"
+
 
 class EventParticipant(models.Model):
     ATTENDANCE_STATUS_CHOICES = [
@@ -60,12 +152,17 @@ class EventParticipant(models.Model):
     role = models.CharField(max_length=100, blank=True)
     email = models.EmailField()
     mobile_number = models.CharField(max_length=20, blank=True)
-    attendance_status = models.CharField(max_length=10, choices=ATTENDANCE_STATUS_CHOICES, default='REGISTERED')
+    attendance_status = models.CharField(
+        max_length=10,
+        choices=ATTENDANCE_STATUS_CHOICES,
+        default='REGISTERED'
+    )
     registration_date = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.name} for {self.event.title}"
+
 
 class EventNotification(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='notifications')
@@ -81,9 +178,15 @@ class EventNotification(models.Model):
     def __str__(self):
         return f"Notification for {self.event.title} to {self.user.username}"
 
+
 class EventHistory(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='history_logs')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='event_history_actions')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='event_history_actions'
+    )
     action = models.CharField(max_length=50)
     field_changed = models.CharField(max_length=100, blank=True, null=True)
     old_value = models.TextField(blank=True, null=True)

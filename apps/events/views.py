@@ -152,6 +152,7 @@ def api_events(request):
             'category_color': event.category.color if event.category else '#4A5568',
             'created_by_name': event.created_by.get_full_name() or event.created_by.username,
             'created_by_id': event.created_by.id,
+            'academic_years': [ay.id for ay in event.academic_years.all()],
         })
 
     return JsonResponse(events_data, safe=False)
@@ -217,34 +218,41 @@ def edit_event(request, event_id):
             changes = {}
             if form.has_changed():
                 for field_name in form.changed_data:
-                    old_value = form.initial.get(field_name)
-                    new_value = form.cleaned_data.get(field_name)
-                    
-                    old_value_display = old_value
-                    new_value_display = new_value
+                    if field_name == 'academic_years':
+                        old_academic_years = set(event.academic_years.values_list('id', flat=True))
+                        new_academic_years = set(form.cleaned_data['academic_years'].values_list('id', flat=True))
+                        if old_academic_years != new_academic_years:
+                            old_value = ', '.join(AcademicYear.objects.filter(id__in=old_academic_years).values_list('name', flat=True)) or "None"
+                            new_value = ', '.join(AcademicYear.objects.filter(id__in=new_academic_years).values_list('name', flat=True)) or "None"
+                            changes['Academic Years'] = {'old': old_value, 'new': new_value}
+                    else:
+                        old_value = form.initial.get(field_name)
+                        new_value = form.cleaned_data.get(field_name)
+                        old_value_display = old_value
+                        new_value_display = new_value
 
-                    if isinstance(new_value, Model):
-                        new_value_display = str(new_value)
-                        if old_value:
-                            try:
-                                old_value_display = str(new_value.__class__.objects.get(pk=old_value))
-                            except new_value.__class__.DoesNotExist:
-                                old_value_display = "N/A"
-                        else:
-                            old_value_display = None
-                    
-                    if field_name in ['status', 'privacy']:
-                        choices = dict(Event.STATUS_CHOICES if field_name == 'status' else Event.PRIVACY_CHOICES)
-                        old_value_display = choices.get(old_value, old_value)
-                        new_value_display = choices.get(new_value, new_value)
+                        if isinstance(new_value, Model):
+                            new_value_display = str(new_value)
+                            if old_value:
+                                try:
+                                    old_value_display = str(new_value.__class__.objects.get(pk=old_value))
+                                except new_value.__class__.DoesNotExist:
+                                    old_value_display = "N/A"
+                            else:
+                                old_value_display = None
+                        
+                        if field_name in ['status', 'privacy']:
+                            choices = dict(Event.STATUS_CHOICES if field_name == 'status' else Event.PRIVACY_CHOICES)
+                            old_value_display = choices.get(old_value, old_value)
+                            new_value_display = choices.get(new_value, new_value)
 
-                    field_label = form.fields[field_name].label or field_name.replace('_', ' ').title()
-                    
-                    if str(old_value_display) != str(new_value_display):
-                        changes[field_label] = {
-                            'old': old_value_display or "Not set",
-                            'new': new_value_display or "Not set"
-                        }
+                        field_label = form.fields[field_name].label or field_name.replace('_', ' ').title()
+                        
+                        if str(old_value_display) != str(new_value_display):
+                            changes[field_label] = {
+                                'old': old_value_display or "Not set",
+                                'new': new_value_display or "Not set"
+                            }
 
             updated_event = form.save()
 
