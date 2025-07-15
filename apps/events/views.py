@@ -57,13 +57,14 @@ def api_auth_required(view_func):
 @require_POST
 def api_filter_events(request):
     """
-    Fetches events based on a date range and category filters provided in the POST body.
+    Fetches events based on a date range, category, and academic year filters provided in the POST body.
     """
     try:
         data = json.loads(request.body)
         start_date_str = data['start_date']
         end_date_str = data['end_date']
         categories = data.get('categories', [])
+        academic_years = data.get('academic_years', [])
     except (json.JSONDecodeError, KeyError):
         return JsonResponse({'error': 'Invalid JSON or missing required fields (start_date, end_date).'}, status=400)
 
@@ -73,9 +74,20 @@ def api_filter_events(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
 
-    date_filter = Q(start_date__lte=end_date) & (Q(end_date__gte=start_date) | Q(end_date__isnull=True, start_date__gte=start_date))
-    queryset = Event.objects.filter(date_filter).select_related('category')
+    # Validate academic years
+    if academic_years:
+        valid_academic_years = set(code for code, _ in AcademicYear.ACADEMIC_YEAR_CHOICES)
+        invalid_years = [year for year in academic_years if year not in valid_academic_years]
+        if invalid_years:
+            return JsonResponse({
+                'error': f"Invalid academic year codes: {invalid_years}. Valid codes are: {', '.join(valid_academic_years)}."
+            }, status=400)
 
+    # Build date filter
+    date_filter = Q(start_date__lte=end_date) & (Q(end_date__gte=start_date) | Q(end_date__isnull=True, start_date__gte=start_date))
+    queryset = Event.objects.filter(date_filter).select_related('category').prefetch_related('academic_years')
+
+    # category filter
     if categories and isinstance(categories, list):
         category_q_filter = Q()
         for category_name in set(categories):
@@ -85,9 +97,12 @@ def api_filter_events(request):
                 category_q_filter |= Q(category__name__iexact='college')
             else:
                 category_q_filter |= Q(category__name__iexact=category_name)
-        
         if category_q_filter:
             queryset = queryset.filter(category_q_filter)
+
+    # academic year filter
+    if academic_years:
+        queryset = queryset.filter(academic_years__name__in=academic_years).distinct()
 
     response_data = []
     for event in queryset:
@@ -99,7 +114,8 @@ def api_filter_events(request):
             "end_date": event.end_date.isoformat() if event.end_date else None,
             "location": event.location,
             "category": event.category.name if event.category else "Uncategorized",
-            "color": event.category.color if event.category else "#4A5568"
+            "color": event.category.color if event.category else "#4A5568",
+            "academic_years": [ay.name for ay in event.academic_years.all()],
         })
 
     return JsonResponse(response_data, safe=False)
