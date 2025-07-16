@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="flex h-full w-full bg-neutral-900 flex-1 overflow-hidden">
-    <aside class="w-[280px] flex-shrink-0 bg-neutral-950 border-r border-neutral-800 flex flex-col p-4 space-y-6 overflow-y-auto">
+    <aside id="left-panel" class="flex-shrink-0 bg-neutral-950 border-r border-neutral-800 flex flex-col p-4 space-y-6 overflow-y-auto">
         {% include "events/mini_calendar.html" %}
 
         <div class="space-y-2 hidden">
@@ -41,7 +41,9 @@
         </div>
     </aside>
 
-    <main class="flex-1 bg-black flex flex-col overflow-y-auto">
+    <div id="left-resizer" class="w-1.5 flex-shrink-0 cursor-col-resize bg-neutral-800 hover:bg-orange-600 transition-colors duration-200"></div>
+
+    <main class="flex-1 bg-black flex flex-col overflow-y-auto min-w-[300px]">
         <div class="flex items-center justify-between p-4 border-b border-neutral-800">
             <h2 id="main-header-date" class="text-xl font-bold text-white"></h2>
             <div class="flex items-center space-x-1">
@@ -65,7 +67,9 @@
         </div>
     </main>
 
-    <aside id="right-panel" class="w-[320px] flex-shrink-0 bg-neutral-950 border-l border-neutral-800 p-4 overflow-y-auto">
+    <div id="right-resizer" class="w-1.5 flex-shrink-0 cursor-col-resize bg-neutral-800 hover:bg-orange-600 transition-colors duration-200"></div>
+
+    <aside id="right-panel" class="flex-shrink-0 bg-neutral-950 border-l border-neutral-800 p-4 overflow-y-auto">
         <div id="right-panel-empty" class="flex flex-col items-center justify-center h-full text-center text-neutral-600">
             <span class="material-symbols-outlined text-6xl">event_note</span>
             <h3 class="mt-4 font-semibold text-neutral-400">Event Details</h3>
@@ -116,7 +120,12 @@
             <div class="border-t border-neutral-800 pt-4 space-y-2">
                 <a id="view-event-btn" href="#" class="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg">View Full Details</a>
                 <button id="edit-event-btn" class="w-full flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg">Edit Event</button>
-                <button id="delete-event-btn" class="w-full bg-red-800/50 hover:bg-red-800/80 text-red-300 py-2 rounded-lg">Delete Event</button>
+                {% if is_chair %}
+                <form id="delete-event-form" method="POST" action="" class="w-full" onsubmit="return confirm('Are you sure you want to permanently delete this event? This will remove the event and all its history. This action cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-red-800/50 hover:bg-red-800/80 text-red-300 py-2 rounded-lg">Delete Event</button>
+                </form>
+                {% endif %}
             </div>
             {% endif %}
             
@@ -133,10 +142,12 @@
 
 {% include "events/event_modal.html" %}
 {{ is_editor|json_script:"is-editor-data" }}
+{{ is_chair|json_script:"is-chair-data" }}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const IS_EDITOR = JSON.parse(document.getElementById('is-editor-data').textContent);
+    const IS_CHAIR = JSON.parse(document.getElementById('is-chair-data').textContent);
 
     let state = {
         currentDate: new Date(),
@@ -319,6 +330,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (IS_EDITOR) {
             document.getElementById('view-event-btn').href = `/events/${event.id}/`;
+        }
+
+        if (IS_CHAIR) {
+            const deleteForm = document.getElementById('delete-event-form');
+            if (deleteForm) {
+                deleteForm.action = `/events/delete/${event.id}/`;
+            }
         }
 
         rightPanelEmpty.classList.add('hidden');
@@ -554,8 +572,65 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.addEventListener('click', (e) => e.target === modal && closeModal());
     };
 
+    const setupResizablePanels = () => {
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const leftResizer = document.getElementById('left-resizer');
+        const rightResizer = document.getElementById('right-resizer');
+
+        if (leftPanel) leftPanel.style.width = '280px';
+        if (rightPanel) rightPanel.style.width = '320px';
+
+        const makeResizable = (panel, resizer) => {
+            if (!panel || !resizer) return;
+
+            let isResizing = false;
+            let startX, startWidth;
+
+            resizer.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = parseInt(document.defaultView.getComputedStyle(panel).width, 10);
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', stopResizing);
+            });
+
+            const handleMouseMove = (e) => {
+                if (!isResizing) return;
+                const dx = e.clientX - startX;
+                let newWidth;
+                if (resizer.id === 'left-resizer') {
+                    newWidth = startWidth + dx;
+                } else {
+                    newWidth = startWidth - dx;
+                }
+                const minWidth = 200;
+                const maxWidth = 600;
+                if (newWidth > minWidth && newWidth < maxWidth) {
+                    panel.style.width = `${newWidth}px`;
+                }
+            };
+
+            const stopResizing = () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', stopResizing);
+                document.body.style.removeProperty('cursor');
+                document.body.style.removeProperty('user-select');
+            };
+        };
+
+        makeResizable(leftPanel, leftResizer);
+        makeResizable(rightPanel, rightResizer);
+    };
+
     const init = async () => {
         setupEventListeners();
+        setupResizablePanels();
+        
         const statusesResult = await fetchAPI("{% url 'events:api_event_statuses' %}");
         if (statusesResult.data) {
             const statuses = statusesResult.data;

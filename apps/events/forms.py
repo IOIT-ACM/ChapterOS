@@ -32,6 +32,7 @@ class EventForm(forms.ModelForm):
         self.fields['end_time'].required = False
         self.fields['academic_years'].queryset = AcademicYear.objects.all()
         self.fields['academic_years'].required = True
+        self.initial['academic_years'] = list(self.fields['academic_years'].queryset.values_list('pk', flat=True))
 
 class BulkUploadForm(forms.Form):
     csv_file = forms.FileField(

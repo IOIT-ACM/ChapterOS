@@ -40,6 +40,12 @@ def is_editor(user):
         return user.groups.filter(name__in=['Admin', 'Core']).exists()
     return False
 
+def is_chair(user):
+    if user.is_authenticated:
+        # Assuming 'Chair' is a Django Group that has delete permissions.
+        return user.groups.filter(name='Chair').exists()
+    return False
+
 def api_auth_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
@@ -125,7 +131,8 @@ def calendar_view(request):
     form = EventForm()
     context = {
         'form': form,
-        'is_editor': is_editor(request.user)
+        'is_editor': is_editor(request.user),
+        'is_chair': is_chair(request.user),
     }
     return render(request, 'events/calendar.html', context)
 
@@ -345,6 +352,16 @@ def edit_event(request, event_id):
                 for error in errors:
                     messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
             return redirect('events:calendar')
+    return redirect('events:calendar')
+
+@require_POST
+@user_passes_test(is_chair)
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    event_title = event.title
+    event.delete()
+    messages.success(request, f"Event '{event_title}' and all its associated data have been permanently deleted.")
+    
     return redirect('events:calendar')
 
 @user_passes_test(is_editor)
