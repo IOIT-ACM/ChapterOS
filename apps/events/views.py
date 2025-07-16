@@ -217,7 +217,7 @@ def api_events(request):
             'status': event.status,
             'get_status_display': event.get_status_display(),
             'privacy': event.privacy,
-            'category_id': event.category.id if event.category else None,
+            'category': event.category.id if event.category else None,
             'category_name': event.category.name if event.category else 'Uncategorized',
             'category_color': event.category.color if event.category else '#4A5568',
             'created_by_name': event.created_by.get_full_name() or event.created_by.username,
