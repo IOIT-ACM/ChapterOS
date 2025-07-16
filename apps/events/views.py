@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Event, EventCategory, EventHistory, AcademicYear
+from .models import Event, EventCategory, EventHistory, AcademicYear, ACADEMIC_YEAR_CHOICES
 from .forms import EventForm, BulkUploadForm
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
@@ -76,7 +76,7 @@ def api_filter_events(request):
 
     # Validate academic years
     if academic_years:
-        valid_academic_years = set(code for code, _ in AcademicYear.ACADEMIC_YEAR_CHOICES)
+        valid_academic_years = set(code for code, _ in ACADEMIC_YEAR_CHOICES)
         invalid_years = [year for year in academic_years if year not in valid_academic_years]
         if invalid_years:
             return JsonResponse({
