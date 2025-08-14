@@ -42,7 +42,6 @@ def is_editor(user):
 
 def is_chair(user):
     if user.is_authenticated:
-        # Assuming 'Chair' is a Django Group that has delete permissions.
         return user.groups.filter(name='Chair').exists()
     return False
 
@@ -62,9 +61,6 @@ def api_auth_required(view_func):
 @csrf_exempt
 @require_POST
 def api_filter_events(request):
-    """
-    Fetches events based on a date range, category, and academic year filters provided in the POST body.
-    """
     try:
         data = json.loads(request.body)
         start_date_str = data['start_date']
@@ -80,7 +76,6 @@ def api_filter_events(request):
     except ValueError:
         return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
 
-    # Validate academic years
     if academic_years:
         valid_academic_years = set(code for code, _ in ACADEMIC_YEAR_CHOICES)
         invalid_years = [year for year in academic_years if year not in valid_academic_years]
@@ -89,11 +84,9 @@ def api_filter_events(request):
                 'error': f"Invalid academic year codes: {invalid_years}. Valid codes are: {', '.join(valid_academic_years)}."
             }, status=400)
 
-    # Build date filter
     date_filter = Q(start_date__lte=end_date) & (Q(end_date__gte=start_date) | Q(end_date__isnull=True, start_date__gte=start_date))
     queryset = Event.objects.filter(date_filter).select_related('category').prefetch_related('academic_years')
 
-    # category filter
     if categories and isinstance(categories, list):
         category_q_filter = Q()
         for category_name in set(categories):
@@ -106,7 +99,6 @@ def api_filter_events(request):
         if category_q_filter:
             queryset = queryset.filter(category_q_filter)
 
-    # academic year filter
     if academic_years:
         queryset = queryset.filter(academic_years__name__in=academic_years).distinct()
 
@@ -482,6 +474,79 @@ def bulk_upload_events(request):
         form = BulkUploadForm()
     
     return render(request, 'events/bulk_upload.html', {'form': form})
+
+@user_passes_test(is_chair)
+def admin_view(request):
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
+
+    today = date.today()
+    default_start_date = date(today.year, 1, 1)
+    default_end_date = date(today.year, 12, 31)
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else default_start_date
+    except (ValueError, TypeError):
+        start_date = default_start_date
+
+    try:
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else default_end_date
+    except (ValueError, TypeError):
+        end_date = default_end_date
+
+    events = Event.objects.filter(
+        start_date__gte=start_date,
+        start_date__lte=end_date
+    ).select_related(
+        'category', 'created_by'
+    ).prefetch_related(
+        'academic_years'
+    ).order_by('start_date', 'start_time')
+
+    context = {
+        'events': events,
+        'start_date': start_date.strftime('%Y-%m-%d'),
+        'end_date': end_date.strftime('%Y-%m-%d'),
+        'is_editor': is_editor(request.user),
+        'is_chair': is_chair(request.user),
+    }
+    return render(request, 'events/admin.html', context)
+
+@require_POST
+@user_passes_test(is_chair)
+def bulk_action(request):
+    action = request.POST.get('action')
+    event_ids = request.POST.getlist('event_ids')
+
+    if not action or not event_ids:
+        messages.error(request, "No action selected or no events chosen.")
+        return redirect('events:admin_view')
+
+    queryset = Event.objects.filter(pk__in=event_ids)
+    count = queryset.count()
+
+    if action == 'delete':
+        queryset.delete()
+        messages.success(request, f"Successfully deleted {count} events.")
+    elif action == 'make_public':
+        queryset.update(privacy='PUBLIC')
+        messages.success(request, f"Successfully made {count} events public.")
+    elif action == 'make_private':
+        queryset.update(privacy='PRIVATE')
+        messages.success(request, f"Successfully made {count} events private.")
+    elif action.startswith('status_'):
+        status = action.split('_', 1)[1].upper()
+        valid_statuses = [s[0] for s in Event.STATUS_CHOICES]
+        if status in valid_statuses:
+            queryset.update(status=status)
+            status_display = status.replace('_', ' ').title()
+            messages.success(request, f"Successfully changed status for {count} events to {status_display}.")
+        else:
+            messages.error(request, "Invalid status selected.")
+    else:
+        messages.error(request, "Invalid action selected.")
+
+    return redirect('events:admin_view')
 
 @user_passes_test(is_editor)
 def download_sample_csv(request):

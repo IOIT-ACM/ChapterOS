@@ -24,4 +24,8 @@ urlpatterns = [
     
     # Standalone event detail page
     path('<int:event_id>/', views.event_detail_view, name='event_detail'),
+
+    # Admin Views
+    path('admin/', views.admin_view, name='admin_view'),
+    path('admin/bulk-action/', views.bulk_action, name='admin_bulk_action'),
 ]

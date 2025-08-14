@@ -1,0 +1,194 @@
+{% extends "events/base.html" %}
+
+{% block title %}Admin Event View - ChapterOS{% endblock %}
+
+{% block fullcontent %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Admin Event Table</h1>
+        </div>
+        <a href="{% url 'events:calendar' %}" class="text-neutral-400 hover:text-white transition-colors rounded-full p-1">
+            <span class="material-symbols-outlined">close</span>
+        </a>
+    </div>
+
+    <div class="bg-neutral-900/50 rounded-xl border border-neutral-800 p-4 mb-6">
+        <form method="get" class="flex flex-wrap items-end gap-4">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-neutral-300 mb-1">Start Date</label>
+                <input type="date" name="start_date" id="start_date" value="{{ start_date }}" class="bg-neutral-800 border-neutral-700 text-white rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5">
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-neutral-300 mb-1">End Date</label>
+                <input type="date" name="end_date" id="end_date" value="{{ end_date }}" class="bg-neutral-800 border-neutral-700 text-white rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5">
+            </div>
+            <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors">Filter</button>
+        </form>
+    </div>
+
+    <form id="bulk-action-form" method="post" action="{% url 'events:admin_bulk_action' %}">
+        {% csrf_token %}
+        <div id="bulk-action-controls" class="mb-4 p-3 bg-neutral-800/50 border border-neutral-700 rounded-lg">
+            <div class="flex items-center gap-4">
+                <span id="selection-count" class="text-sm font-medium text-neutral-300"></span>
+                <select name="action" id="bulk-action-select" class="bg-neutral-800 border-neutral-700 text-white rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full sm:w-auto p-2.5 text-sm">
+                    <option value="">Choose an action...</option>
+                    <option value="delete">Delete Selected</option>
+                    <option value="make_public">Make Public</option>
+                    <option value="make_private">Make Private</option>
+                    <optgroup label="Change Status">
+                        <option value="status_planned">To Planned</option>
+                        <option value="status_in_progress">To In Progress</option>
+                        <option value="status_completed">To Completed</option>
+                        <option value="status_cancelled">To Cancelled</option>
+                    </optgroup>
+                </select>
+                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors text-sm">Apply</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto bg-neutral-900/50 rounded-xl border border-neutral-800">
+            <table class="w-full text-sm text-left text-neutral-300">
+                <thead class="text-xs text-neutral-200 uppercase bg-neutral-800">
+                    <tr>
+                        <th scope="col" class="p-4">
+                            <div class="flex items-center">
+                                <input id="select-all-checkbox" type="checkbox" class="w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
+                                <label for="select-all-checkbox" class="sr-only">checkbox</label>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3">Title</th>
+                        <th scope="col" class="px-6 py-3">Date & Time</th>
+                        <th scope="col" class="px-6 py-3">Category</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3">Privacy</th>
+                        <th scope="col" class="px-6 py-3">Academic Years</th>
+                        <th scope="col" class="px-6 py-3">Location</th>
+                        <th scope="col" class="px-6 py-3">Created By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr class="border-b border-neutral-800">
+                        <td class="w-4 p-4">
+                            <div class="flex items-center">
+                                <input name="event_ids" value="{{ event.id }}" type="checkbox" class="event-checkbox w-4 h-4 text-orange-600 bg-neutral-700 border-neutral-600 rounded focus:ring-orange-500">
+                                <label for="checkbox-table-search-{{ forloop.counter }}" class="sr-only">checkbox</label>
+                            </div>
+                        </td>
+                        <th scope="row" class="px-6 py-4 font-medium text-white whitespace-nowrap">
+                            <a href="{% url 'events:event_detail' event.id %}" class="hover:text-orange-400 transition-colors">{{ event.title }}</a>
+                        </th>
+                        <td class="px-6 py-4">
+                            {{ event.start_date|date:"Y-m-d" }}
+                            {% if event.start_time %}{{ event.start_time|time:"H:i" }}{% endif %}
+                            {% if event.end_date and event.end_date != event.start_date %}
+                                <br>to {{ event.end_date|date:"Y-m-d" }}
+                                {% if event.end_time %}{{ event.end_time|time:"H:i" }}{% endif %}
+                            {% elif event.end_time %}
+                                - {{ event.end_time|time:"H:i" }}
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if event.category %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full text-white" style="background-color: {{ event.category.color }};">{{ event.category.name }}</span>
+                            {% else %}
+                                <span class="text-neutral-500">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">{{ event.get_status_display }}</td>
+                        <td class="px-6 py-4">{{ event.get_privacy_display }}</td>
+                        <td class="px-6 py-4">
+                            {% with academic_years=event.academic_years.all %}
+                            {% if academic_years %}
+                                <div class="flex flex-wrap gap-1">
+                                {% for year in academic_years %}
+                                    <span class="px-2 py-0.5 bg-orange-900/50 text-orange-300 text-xs font-medium rounded-md border border-orange-800">{{ year.name }}</span>
+                                {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="text-neutral-500">-</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="px-6 py-4">{{ event.location|default:"-" }}</td>
+                        <td class="px-6 py-4">{{ event.created_by.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center p-8 text-neutral-500">No events found in this date range.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const eventCheckboxes = document.querySelectorAll('.event-checkbox');
+    const bulkActionControls = document.getElementById('bulk-action-controls');
+    const selectionCount = document.getElementById('selection-count');
+    const bulkActionForm = document.getElementById('bulk-action-form');
+    const bulkActionSelect = document.getElementById('bulk-action-select');
+
+    function toggleRowHighlight(checkbox) {
+        const row = checkbox.closest('tr');
+        if (row) {
+            if (checkbox.checked) {
+                row.classList.add('bg-orange-500');
+            } else {
+                row.classList.remove('bg-orange-500');
+            }
+        }
+    }
+
+    function updateControls() {
+        const checkedCount = document.querySelectorAll('.event-checkbox:checked').length;
+        selectionCount.textContent = `${checkedCount} selected`;
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checkedCount > 0 && checkedCount === eventCheckboxes.length;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            eventCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+                toggleRowHighlight(checkbox);
+            });
+            updateControls();
+        });
+    }
+
+    eventCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateControls();
+            toggleRowHighlight(this);
+        });
+    });
+
+    if (bulkActionForm) {
+        bulkActionForm.addEventListener('submit', function(e) {
+            const selectedAction = bulkActionSelect.value;
+            if (!selectedAction) {
+                e.preventDefault();
+                alert('Please select a bulk action to perform.');
+                return;
+            }
+            if (selectedAction === 'delete') {
+                const checkedCount = document.querySelectorAll('.event-checkbox:checked').length;
+                if (!confirm(`Are you sure you want to delete ${checkedCount} selected event(s)? This action cannot be undone.`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+
+    updateControls();
+});
+</script>
+{% endblock %}
