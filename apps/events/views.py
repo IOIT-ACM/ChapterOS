@@ -61,20 +61,38 @@ def api_auth_required(view_func):
 @csrf_exempt
 @require_POST
 def api_filter_events(request):
-    try:
-        data = json.loads(request.body)
-        start_date_str = data['start_date']
-        end_date_str = data['end_date']
-        categories = data.get('categories', [])
-        academic_years = data.get('academic_years', [])
-    except (json.JSONDecodeError, KeyError):
-        return JsonResponse({'error': 'Invalid JSON or missing required fields (start_date, end_date).'}, status=400)
+    month_str = request.GET.get('month')
+    year_str = request.GET.get('year')
 
     try:
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+        data = json.loads(request.body) if request.body else {}
+        categories = data.get('categories', [])
+        academic_years = data.get('academic_years', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON in request body.'}, status=400)
+
+    if month_str and year_str:
+        try:
+            month, year = int(month_str), int(year_str)
+            if not (1 <= month <= 12):
+                raise ValueError("Month out of range.")
+            start_date = date(year, month, 1)
+            if month == 12:
+                end_date = date(year, 12, 31)
+            else:
+                end_date = date(year, month + 1, 1) - timedelta(days=1)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid month or year in query parameters.'}, status=400)
+    else:
+        try:
+            start_date_str = data['start_date']
+            end_date_str = data['end_date']
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except KeyError:
+            return JsonResponse({'error': 'Missing required fields (start_date, end_date) in body when month/year params are absent.'}, status=400)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid date format in body. Use YYYY-MM-DD.'}, status=400)
 
     if academic_years:
         valid_academic_years = set(code for code, _ in ACADEMIC_YEAR_CHOICES)
